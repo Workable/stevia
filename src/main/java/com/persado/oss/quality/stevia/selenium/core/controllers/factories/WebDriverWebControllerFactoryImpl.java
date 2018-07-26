@@ -49,19 +49,20 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.firefox.internal.ProfilesIni;
 import org.openqa.selenium.ie.InternetExplorerDriver;
-import org.openqa.selenium.remote.Augmenter;
-import org.openqa.selenium.remote.DesiredCapabilities;
-import org.openqa.selenium.remote.LocalFileDetector;
-import org.openqa.selenium.remote.RemoteWebDriver;
+import org.openqa.selenium.net.PortProber;
+import org.openqa.selenium.remote.*;
 import org.openqa.selenium.safari.SafariDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.StringUtils;
+import org.testng.Assert;
 
 import java.io.File;
+import java.net.Inet4Address;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -131,6 +132,19 @@ public class WebDriverWebControllerFactoryImpl implements WebControllerFactory {
                         options.addExtensions(new File(path));
                     }
                 }
+
+                if (SteviaContext.getParam("chromeDriverProxy") != null && SteviaContext.getParam("chromeDriverProxy").equals("true")){
+                    try {
+                        String hostIp = Inet4Address.getLocalHost().getHostAddress();
+                        options.addArguments("--proxy-server="+hostIp+":" + PortProber.findFreePort());
+                        LOG.info("Proxy functionality enabled for chromedriver and running on: " + hostIp+":5439");
+                    } catch (UnknownHostException e) {
+                        e.printStackTrace();
+                        Assert.fail("invalid Host Address");
+                    }
+                    //            capabilities.setCapability(CapabilityType.PROXY, );
+                }
+
                 desiredCapabilities.setCapability(ChromeOptions.CAPABILITY, options);
             } else if (SteviaContext.getParam(SteviaWebControllerFactory.BROWSER).compareTo("iexplorer") == 0) {
                 LOG.info("Debug OFF, using a RemoteWebDriver with Internet Explorer capabilities");
@@ -245,6 +259,17 @@ public class WebDriverWebControllerFactoryImpl implements WebControllerFactory {
                 LOG.info("Use chrome with extension: " + path);
                 options.addExtensions(new File(path));
             }
+        }
+
+        if (SteviaContext.getParam("chromeDriverProxy") != null && SteviaContext.getParam("chromeDriverProxy").equals("true")){
+            try {
+                String hostIp = Inet4Address.getLocalHost().getHostAddress();
+                options.addArguments("--proxy-server="+hostIp+":5439");
+            } catch (UnknownHostException e) {
+                e.printStackTrace();
+                Assert.fail("invalid Host Address");
+            }
+            //            capabilities.setCapability(CapabilityType.PROXY, );
         }
 
         capabilities.setCapability(ChromeOptions.CAPABILITY, options);
