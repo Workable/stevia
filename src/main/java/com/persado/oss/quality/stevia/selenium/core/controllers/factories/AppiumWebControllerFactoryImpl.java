@@ -55,8 +55,10 @@ import org.springframework.context.ApplicationContext;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 
 public class AppiumWebControllerFactoryImpl implements WebControllerFactory {
+
     private static final Logger LOG = LoggerFactory.getLogger(AppiumWebControllerFactoryImpl.class);
     private boolean seleniumGridEnabled;
 
@@ -120,18 +122,14 @@ public class AppiumWebControllerFactoryImpl implements WebControllerFactory {
             setCapabilityIfExists(capabilities, "realDeviceLogger");
             setCapabilityIfExists(capabilities, IOSMobileCapabilityType.XCODE_CONFIG_FILE);
         }
-        setCapabilityIfExists(capabilities, IOSMobileCapabilityType.USE_PREBUILT_WDA);
-        setCapabilityIfExists(capabilities, IOSMobileCapabilityType.WDA_LOCAL_PORT);
-        setCapabilityIfExists(capabilities, IOSMobileCapabilityType.WDA_CONNECTION_TIMEOUT);
-        setCapabilityIfExists(capabilities, IOSMobileCapabilityType.USE_NEW_WDA);
-        setCapabilityIfExists(capabilities, IOSMobileCapabilityType.XCODE_ORG_ID);
-        setCapabilityIfExists(capabilities, IOSMobileCapabilityType.XCODE_SIGNING_ID);
-        setCapabilityIfExists(capabilities, IOSMobileCapabilityType.SHOW_IOS_LOG);
-        setCapabilityIfExists(capabilities, IOSMobileCapabilityType.AUTO_ACCEPT_ALERTS);
-        setCapabilityIfExists(capabilities, IOSMobileCapabilityType.AUTO_DISMISS_ALERTS);
-        setCapabilityIfExists(capabilities, "useJSONSource");
-        setCapabilityIfExists(capabilities, IOSMobileCapabilityType.WDA_LAUNCH_TIMEOUT);
-        setCapabilityIfExists(capabilities, IOSMobileCapabilityType.WDA_STARTUP_RETRIES);
+
+        setCapabilitiesInList(capabilities, WantedAppiumCapabilities.IOS_DEFAULT_CAPABILITIES);
+    }
+
+    private void setCapabilitiesInList(DesiredCapabilities capabilities, List<String> capList) {
+        for (String cap : capList) {
+            setCapabilityIfExists(capabilities, cap);
+        }
     }
 
     private void setCapabilityIfExists(DesiredCapabilities capabilities, String capabilityToSet) {
@@ -142,61 +140,31 @@ public class AppiumWebControllerFactoryImpl implements WebControllerFactory {
 
 
     private void setupCommonCapabilities(DesiredCapabilities capabilities) {
-        setCapabilityIfExists(capabilities, MobileCapabilityType.DEVICE_NAME);
-        setCapabilityIfExists(capabilities, MobileCapabilityType.UDID);
-        setCapabilityIfExists(capabilities, MobileCapabilityType.PLATFORM_NAME);
-        setCapabilityIfExists(capabilities, MobileCapabilityType.PLATFORM_VERSION);
         if (variableExists(SteviaWebControllerFactory.BROWSER)) {
             capabilities.setCapability(MobileCapabilityType.BROWSER_NAME, SteviaContext.getParam(SteviaWebControllerFactory.BROWSER));
         }
-        setCapabilityIfExists(capabilities, MobileCapabilityType.APP);
-        setCapabilityIfExists(capabilities, MobileCapabilityType.AUTO_WEBVIEW);
         if (variableExists(MobileCapabilityType.NEW_COMMAND_TIMEOUT)) {
             capabilities.setCapability(MobileCapabilityType.NEW_COMMAND_TIMEOUT, Integer.parseInt(SteviaContext.getParam(MobileCapabilityType.NEW_COMMAND_TIMEOUT)));
         }
-        setCapabilityIfExists(capabilities, MobileCapabilityType.AUTOMATION_NAME);
-        setCapabilityIfExists(capabilities, MobileCapabilityType.NO_RESET);
-        setCapabilityIfExists(capabilities, MobileCapabilityType.CLEAR_SYSTEM_FILES);
+
+        setCapabilitiesInList(capabilities, WantedAppiumCapabilities.COMMON_CAPABILITIES);
     }
 
     private void setupAndroidCapabilities(DesiredCapabilities capabilities) {
         capabilities.setCapability(AndroidMobileCapabilityType.RECREATE_CHROME_DRIVER_SESSIONS, true);
-        setCapabilityIfExists(capabilities, AndroidMobileCapabilityType.APP_PACKAGE);
-        setCapabilityIfExists(capabilities, AndroidMobileCapabilityType.APP_WAIT_PACKAGE);
-        setCapabilityIfExists(capabilities, AndroidMobileCapabilityType.APP_ACTIVITY);
-        setCapabilityIfExists(capabilities, AndroidMobileCapabilityType.APP_WAIT_ACTIVITY);
-        setCapabilityIfExists(capabilities, AndroidMobileCapabilityType.ADB_PORT);
-        setCapabilityIfExists(capabilities, AndroidMobileCapabilityType.SYSTEM_PORT);
-        setCapabilityIfExists(capabilities, AndroidMobileCapabilityType.NO_SIGN);
-        setCapabilityIfExists(capabilities, "skipUnlock");
-        setCapabilityIfExists(capabilities, AndroidMobileCapabilityType.USE_KEYSTORE);
-        setCapabilityIfExists(capabilities, AndroidMobileCapabilityType.KEYSTORE_PATH);
-        setCapabilityIfExists(capabilities, AndroidMobileCapabilityType.KEYSTORE_PASSWORD);
-        setCapabilityIfExists(capabilities, AndroidMobileCapabilityType.KEY_ALIAS);
-        setCapabilityIfExists(capabilities, AndroidMobileCapabilityType.KEY_PASSWORD);
-        setCapabilityIfExists(capabilities, AndroidMobileCapabilityType.ANDROID_COVERAGE);
 
+        setCapabilitiesInList(capabilities, WantedAppiumCapabilities.ANDROID_DEFAULT_CAPABILITIES);
     }
 
     private void setupTestDroidParameters(DesiredCapabilities capabilities) {
         if (SteviaContext.getParam("cloudService").equalsIgnoreCase("Testdroid")) {
-            setCapabilityIfExists(capabilities, "testdroid_username");
-            setCapabilityIfExists(capabilities, "testdroid_password");
-            setCapabilityIfExists(capabilities, "testdroid_apiKey");
-            setCapabilityIfExists(capabilities, "testdroid_target");
-            setCapabilityIfExists(capabilities, "testdroid_project");
-            setCapabilityIfExists(capabilities, "testdroid_testrun");
-            setCapabilityIfExists(capabilities, "testdroid_device");
-            setCapabilityIfExists(capabilities, "testdroid_app");
+            setCapabilitiesInList(capabilities, WantedAppiumCapabilities.TEST_DROID_CAPABILITIES);
         }
     }
 
     private void setAppSauceLabsParams(DesiredCapabilities capabilities) {
         if (SteviaContext.getParam("cloudService").equalsIgnoreCase("SauceLabs")) {
-            setCapabilityIfExists(capabilities, "username");
-            setCapabilityIfExists(capabilities, "access-key");
-            setCapabilityIfExists(capabilities, "deviceType");
-            setCapabilityIfExists(capabilities, "appiumVersion");
+            setCapabilitiesInList(capabilities, WantedAppiumCapabilities.SAUCE_LABS_CAPABILITIES);
         }
     }
 
