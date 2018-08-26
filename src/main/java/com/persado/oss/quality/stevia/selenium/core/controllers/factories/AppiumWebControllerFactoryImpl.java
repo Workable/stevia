@@ -71,15 +71,8 @@ public class AppiumWebControllerFactoryImpl implements WebControllerFactory {
         DesiredCapabilities capabilities = new DesiredCapabilities();
 
         setupCommonCapabilities(capabilities);
+        setCloudServiceCapabilities(capabilities);
 
-        //Sauce Labs parameters
-        setAppSauceLabsParams(capabilities);
-
-        //TestDroid parameters
-        setupTestDroidParameters(capabilities);
-
-        //Selenium Grid test level parameters
-        setupSeleniumGridParameters(capabilities);
 
         LOG.info("Appium Desired capabilities {}", new Object[]{capabilities});
 
@@ -95,6 +88,24 @@ public class AppiumWebControllerFactoryImpl implements WebControllerFactory {
 
         appiumController.setDriver(driver);
         return appiumController;
+    }
+
+    private void setCloudServiceCapabilities(DesiredCapabilities capabilities) {
+        String cloudService = SteviaContext.getParam("cloudService");
+        if (cloudService.equalsIgnoreCase("SauceLabs")) {
+            //Sauce Labs parameters
+            setupSauceLabsParams(capabilities);
+        }
+
+        if (cloudService.equalsIgnoreCase("Testdroid")) {
+            //TestDroid parameters
+            setupTestDroidParameters(capabilities);
+        }
+
+        if (cloudService.equalsIgnoreCase("SeleniumGrid")) {
+            //Selenium Grid test level parameters
+            setupSeleniumGridParameters(capabilities);
+        }
     }
 
     private void setCapabilitiesForPlatform(DesiredCapabilities capabilities, String platform){
@@ -179,15 +190,11 @@ public class AppiumWebControllerFactoryImpl implements WebControllerFactory {
     }
 
     private void setupTestDroidParameters(DesiredCapabilities capabilities) {
-        if (SteviaContext.getParam("cloudService").equalsIgnoreCase("Testdroid")) {
-            setCapabilitiesInList(capabilities, WantedAppiumCapabilities.TEST_DROID_CAPABILITIES);
-        }
+        setCapabilitiesInList(capabilities, WantedAppiumCapabilities.TEST_DROID_CAPABILITIES);
     }
 
-    private void setAppSauceLabsParams(DesiredCapabilities capabilities) {
-        if (SteviaContext.getParam("cloudService").equalsIgnoreCase("SauceLabs")) {
-            setCapabilitiesInList(capabilities, WantedAppiumCapabilities.SAUCE_LABS_CAPABILITIES);
-        }
+    private void setupSauceLabsParams(DesiredCapabilities capabilities) {
+        setCapabilitiesInList(capabilities, WantedAppiumCapabilities.SAUCE_LABS_CAPABILITIES);
     }
 
     @Override
