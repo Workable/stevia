@@ -60,7 +60,6 @@ import java.util.List;
 public class AppiumWebControllerFactoryImpl implements WebControllerFactory {
 
     private static final Logger LOG = LoggerFactory.getLogger(AppiumWebControllerFactoryImpl.class);
-    public static final String APPIUM_SERVER_URL = "http://" + SteviaContext.getParam(SteviaWebControllerFactory.RC_HOST) + ":" + SteviaContext.getParam(SteviaWebControllerFactory.RC_PORT) + "/wd/hub";
 
     @Override
     public WebController initialize(ApplicationContext context, WebController controller) {
@@ -77,8 +76,8 @@ public class AppiumWebControllerFactoryImpl implements WebControllerFactory {
 
 
         String platform = SteviaContext.getParam(MobileCapabilityType.PLATFORM_NAME);
-        driver = getDriverForPlatform(capabilities, platform);
         setCapabilitiesForPlatform(capabilities, platform);
+        driver = getDriverForPlatform(capabilities, platform);
         driver.setFileDetector(new LocalFileDetector());
 
         if (variableExists(SteviaWebControllerFactory.TARGET_HOST_URL) && variableExists(SteviaWebControllerFactory.BROWSER)) {
@@ -135,11 +134,18 @@ public class AppiumWebControllerFactoryImpl implements WebControllerFactory {
     }
 
     private IOSDriver getIOSDriverWithCapabilities(DesiredCapabilities capabilities) throws MalformedURLException {
-        return new IOSDriver(new URL(APPIUM_SERVER_URL), capabilities);
+        return new IOSDriver(buildAppiumUrl(), capabilities);
+    }
+
+    private URL buildAppiumUrl() throws MalformedURLException {
+        String rcHost = SteviaContext.getParam(SteviaWebControllerFactory.RC_HOST);
+        String rcPort = SteviaContext.getParam(SteviaWebControllerFactory.RC_PORT);
+        String url = String.format("http://%s:%s/wd/hub", rcHost, rcPort);
+        return new URL(url);
     }
 
     private AndroidDriver getAndroidDriverWithCapabilities(DesiredCapabilities capabilities) throws MalformedURLException {
-        return new AndroidDriver(new URL(APPIUM_SERVER_URL), capabilities);
+        return new AndroidDriver(buildAppiumUrl(), capabilities);
     }
 
     private void setupSeleniumGridParameters(DesiredCapabilities capabilities) {
