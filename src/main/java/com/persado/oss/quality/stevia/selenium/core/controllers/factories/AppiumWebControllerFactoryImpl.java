@@ -60,7 +60,6 @@ import java.util.List;
 public class AppiumWebControllerFactoryImpl implements WebControllerFactory {
 
     private static final Logger LOG = LoggerFactory.getLogger(AppiumWebControllerFactoryImpl.class);
-    private boolean seleniumGridEnabled;
     public static final String APPIUM_SERVER_URL = "http://" + SteviaContext.getParam(SteviaWebControllerFactory.RC_HOST) + ":" + SteviaContext.getParam(SteviaWebControllerFactory.RC_PORT) + "/wd/hub";
 
     @Override
@@ -144,7 +143,7 @@ public class AppiumWebControllerFactoryImpl implements WebControllerFactory {
     }
 
     private void setupSeleniumGridParameters(DesiredCapabilities capabilities) {
-
+        setCapabilitiesInList(capabilities, WantedAppiumCapabilities.SELENIUM_GRID_CAPABILITIES);
     }
 
     private boolean variableExists(String param) {
