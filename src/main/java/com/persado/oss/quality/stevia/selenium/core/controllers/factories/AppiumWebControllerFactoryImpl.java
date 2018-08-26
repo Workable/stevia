@@ -61,6 +61,7 @@ public class AppiumWebControllerFactoryImpl implements WebControllerFactory {
 
     private static final Logger LOG = LoggerFactory.getLogger(AppiumWebControllerFactoryImpl.class);
     private boolean seleniumGridEnabled;
+    public static final String APPIUM_SERVER_URL = "http://" + SteviaContext.getParam(SteviaWebControllerFactory.RC_HOST) + ":" + SteviaContext.getParam(SteviaWebControllerFactory.RC_PORT) + "/wd/hub";
 
     @Override
     public WebController initialize(ApplicationContext context, WebController controller) {
@@ -83,22 +84,9 @@ public class AppiumWebControllerFactoryImpl implements WebControllerFactory {
         LOG.info("Appium Desired capabilities {}", new Object[]{capabilities});
 
 
-        if (SteviaContext.getParam(MobileCapabilityType.PLATFORM_NAME).compareTo("Android") == 0) {
-            setupAndroidCapabilities(capabilities);
-            try {
-                driver = new AndroidDriver(new URL("http://" + SteviaContext.getParam(SteviaWebControllerFactory.RC_HOST) + ":" + SteviaContext.getParam(SteviaWebControllerFactory.RC_PORT) + "/wd/hub"), capabilities);
-            } catch (MalformedURLException e) {
-                throw new IllegalArgumentException(e.getMessage(), e);
-            }
-        }
-        if (SteviaContext.getParam(MobileCapabilityType.PLATFORM_NAME).compareTo("iOS") == 0) {
-            try {
-                setupIOSCapabilities(capabilities);
-                driver = new IOSDriver(new URL("http://" + SteviaContext.getParam(SteviaWebControllerFactory.RC_HOST) + ":" + SteviaContext.getParam(SteviaWebControllerFactory.RC_PORT) + "/wd/hub"), capabilities);
-            } catch (MalformedURLException e) {
-                throw new IllegalArgumentException(e.getMessage(), e);
-            }
-        }
+        String platform = SteviaContext.getParam(MobileCapabilityType.PLATFORM_NAME);
+        driver = getDriverForPlatform(capabilities, platform);
+        setCapabilitiesForPlatform(capabilities, platform);
         driver.setFileDetector(new LocalFileDetector());
 
         if (variableExists(SteviaWebControllerFactory.TARGET_HOST_URL) && variableExists(SteviaWebControllerFactory.BROWSER)) {
@@ -107,6 +95,41 @@ public class AppiumWebControllerFactoryImpl implements WebControllerFactory {
 
         appiumController.setDriver(driver);
         return appiumController;
+    }
+
+    private void setCapabilitiesForPlatform(DesiredCapabilities capabilities, String platform){
+        if (platform.compareTo("Android") == 0) {
+            setupAndroidCapabilities(capabilities);
+        } else if (platform.compareTo("iOS") == 0) {
+            setupIOSCapabilities(capabilities);
+        }
+    }
+
+    private AppiumDriver getAppiumDriverForPlatform(String platform, DesiredCapabilities capabilities) throws MalformedURLException {
+        if (platform.compareTo("Android") == 0) {
+            return getAndroidDriverWithCapabilities(capabilities);
+        } else if (platform.compareTo("iOS") == 0) {
+            return getIOSDriverWithCapabilities(capabilities);
+        }
+        throw new IllegalArgumentException(String.format("Driver for platform %s not found", platform));
+    }
+
+    private AppiumDriver getDriverForPlatform(DesiredCapabilities capabilities, String platform) {
+        AppiumDriver driver;
+        try {
+            driver = getAppiumDriverForPlatform(platform, capabilities);
+        } catch (MalformedURLException e) {
+            throw new IllegalArgumentException(e.getMessage(), e);
+        }
+        return driver;
+    }
+
+    private IOSDriver getIOSDriverWithCapabilities(DesiredCapabilities capabilities) throws MalformedURLException {
+        return new IOSDriver(new URL(APPIUM_SERVER_URL), capabilities);
+    }
+
+    private AndroidDriver getAndroidDriverWithCapabilities(DesiredCapabilities capabilities) throws MalformedURLException {
+        return new AndroidDriver(new URL(APPIUM_SERVER_URL), capabilities);
     }
 
     private void setupSeleniumGridParameters(DesiredCapabilities capabilities) {
@@ -137,7 +160,6 @@ public class AppiumWebControllerFactoryImpl implements WebControllerFactory {
             capabilities.setCapability(capabilityToSet, SteviaContext.getParam(capabilityToSet));
         }
     }
-
 
     private void setupCommonCapabilities(DesiredCapabilities capabilities) {
         if (variableExists(SteviaWebControllerFactory.BROWSER)) {
@@ -172,6 +194,4 @@ public class AppiumWebControllerFactoryImpl implements WebControllerFactory {
     public String getBeanName() {
         return "appiumController";
     }
-
-
 }
