@@ -158,7 +158,7 @@ public class Verify extends WebComponent {
      */
     public void info(String message) {
         VERIFY_LOG.info(message);
-        Reporter.log("<p class=\"testOutput\" style=\"color:green; font-size:1em;\">" + message + "</p>");
+        Reporter.log("<div class=\"testOutput\" style=\"color:green; font-size:1em;\">" + message + "</div>");
     }
 
     /**
@@ -168,7 +168,7 @@ public class Verify extends WebComponent {
      */
     public void warn(String message) {
         VERIFY_LOG.warn(message);
-        Reporter.log("<p class=\"testOutput\" style=\"color:orange; font-size:1em;\">" + message + "</p>");
+        Reporter.log("<div class=\"testOutput\" style=\"color:orange; font-size:1em;\">" + message + "</div>");
     }
 
     /**
@@ -178,7 +178,7 @@ public class Verify extends WebComponent {
      */
     public void error(String message) {
         VERIFY_LOG.error(message);
-        Reporter.log("<p class=\"testOutput\" style=\"color:red; font-size:1em;\">" + message + "</p>");
+        Reporter.log("<div class=\"testOutput\" style=\"color:red; font-size:1em;\">" + message + "</div>");
     }
 
     /**
