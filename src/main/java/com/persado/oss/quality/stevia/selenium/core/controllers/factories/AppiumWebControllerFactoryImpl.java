@@ -148,6 +148,9 @@ public class AppiumWebControllerFactoryImpl implements WebControllerFactory {
         if (!StringUtils.isEmpty(SteviaContext.getParam(IOSMobileCapabilityType.WDA_STARTUP_RETRIES))) {
             capabilities.setCapability(IOSMobileCapabilityType.WDA_STARTUP_RETRIES, SteviaContext.getParam(IOSMobileCapabilityType.WDA_STARTUP_RETRIES));
         }
+        if (!StringUtils.isEmpty(SteviaContext.getParam(IOSMobileCapabilityType.COMMAND_TIMEOUTS))) {
+            capabilities.setCapability(IOSMobileCapabilityType.COMMAND_TIMEOUTS, SteviaContext.getParam(IOSMobileCapabilityType.COMMAND_TIMEOUTS));
+        }
     }
 
 
