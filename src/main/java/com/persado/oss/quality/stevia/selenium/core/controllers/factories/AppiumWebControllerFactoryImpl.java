@@ -151,6 +151,21 @@ public class AppiumWebControllerFactoryImpl implements WebControllerFactory {
         if (!StringUtils.isEmpty(SteviaContext.getParam(IOSMobileCapabilityType.COMMAND_TIMEOUTS))) {
             capabilities.setCapability(IOSMobileCapabilityType.COMMAND_TIMEOUTS, SteviaContext.getParam(IOSMobileCapabilityType.COMMAND_TIMEOUTS));
         }
+        if (!StringUtils.isEmpty(SteviaContext.getParam(IOSMobileCapabilityType.WDA_STARTUP_RETRY_INTERVAL))) {
+            capabilities.setCapability(IOSMobileCapabilityType.WDA_STARTUP_RETRY_INTERVAL, SteviaContext.getParam(IOSMobileCapabilityType.WDA_STARTUP_RETRY_INTERVAL));
+        }
+        if (!StringUtils.isEmpty(SteviaContext.getParam(IOSMobileCapabilityType.RESET_ON_SESSION_START_ONLY))) {
+            capabilities.setCapability(IOSMobileCapabilityType.RESET_ON_SESSION_START_ONLY, SteviaContext.getParam(IOSMobileCapabilityType.RESET_ON_SESSION_START_ONLY));
+        }
+        if (!StringUtils.isEmpty(SteviaContext.getParam(IOSMobileCapabilityType.WEB_DRIVER_AGENT_URL))) {
+            capabilities.setCapability(IOSMobileCapabilityType.WEB_DRIVER_AGENT_URL, SteviaContext.getParam(IOSMobileCapabilityType.WEB_DRIVER_AGENT_URL));
+        }
+        if (!StringUtils.isEmpty(SteviaContext.getParam(IOSMobileCapabilityType.PREVENT_WDAATTACHMENTS))) {
+            capabilities.setCapability(IOSMobileCapabilityType.PREVENT_WDAATTACHMENTS, SteviaContext.getParam(IOSMobileCapabilityType.PREVENT_WDAATTACHMENTS));
+        }
+        if (!StringUtils.isEmpty(SteviaContext.getParam(IOSMobileCapabilityType.UPDATE_WDA_BUNDLEID))) {
+            capabilities.setCapability(IOSMobileCapabilityType.UPDATE_WDA_BUNDLEID, SteviaContext.getParam(IOSMobileCapabilityType.UPDATE_WDA_BUNDLEID));
+        }
     }
 
 
