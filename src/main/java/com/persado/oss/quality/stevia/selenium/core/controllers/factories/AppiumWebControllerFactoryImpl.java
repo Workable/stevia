@@ -122,7 +122,7 @@ public class AppiumWebControllerFactoryImpl implements WebControllerFactory {
             capabilities.setCapability(IOSMobileCapabilityType.WDA_CONNECTION_TIMEOUT, SteviaContext.getParam(IOSMobileCapabilityType.WDA_CONNECTION_TIMEOUT));
         }
         if (!StringUtils.isEmpty(SteviaContext.getParam(IOSMobileCapabilityType.USE_NEW_WDA))) {
-            capabilities.setCapability(IOSMobileCapabilityType.USE_NEW_WDA, SteviaContext.getParam(IOSMobileCapabilityType.USE_NEW_WDA));
+            capabilities.setCapability(IOSMobileCapabilityType.USE_NEW_WDA, Boolean.parseBoolean(SteviaContext.getParam(IOSMobileCapabilityType.USE_NEW_WDA)));
         }
         if (!StringUtils.isEmpty(SteviaContext.getParam(IOSMobileCapabilityType.XCODE_ORG_ID))) {
             capabilities.setCapability(IOSMobileCapabilityType.XCODE_ORG_ID, SteviaContext.getParam(IOSMobileCapabilityType.XCODE_ORG_ID));
@@ -140,7 +140,7 @@ public class AppiumWebControllerFactoryImpl implements WebControllerFactory {
             capabilities.setCapability(IOSMobileCapabilityType.AUTO_DISMISS_ALERTS, SteviaContext.getParam(IOSMobileCapabilityType.AUTO_DISMISS_ALERTS));
         }
         if (!StringUtils.isEmpty(SteviaContext.getParam("useJSONSource"))) {
-            capabilities.setCapability("useJSONSource", SteviaContext.getParam("useJSONSource"));
+            capabilities.setCapability("useJSONSource", Boolean.parseBoolean(SteviaContext.getParam("useJSONSource")));
         }
         if (!StringUtils.isEmpty(SteviaContext.getParam(IOSMobileCapabilityType.WDA_LAUNCH_TIMEOUT))) {
             capabilities.setCapability(IOSMobileCapabilityType.WDA_LAUNCH_TIMEOUT, SteviaContext.getParam(IOSMobileCapabilityType.WDA_LAUNCH_TIMEOUT));
