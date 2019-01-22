@@ -214,10 +214,10 @@ public class AppiumWebControllerFactoryImpl implements WebControllerFactory {
             capabilities.setCapability(AndroidMobileCapabilityType.SYSTEM_PORT, SteviaContext.getParam(AndroidMobileCapabilityType.SYSTEM_PORT));
         }
         if (!StringUtils.isEmpty(SteviaContext.getParam(AndroidMobileCapabilityType.NO_SIGN))) {
-            capabilities.setCapability(AndroidMobileCapabilityType.NO_SIGN, SteviaContext.getParam(AndroidMobileCapabilityType.NO_SIGN));
+            capabilities.setCapability(AndroidMobileCapabilityType.NO_SIGN, Boolean.parseBoolean(SteviaContext.getParam(AndroidMobileCapabilityType.NO_SIGN)));
         }
         if (!StringUtils.isEmpty(SteviaContext.getParam("skipUnlock"))) {
-            capabilities.setCapability("skipUnlock", SteviaContext.getParam("skipUnlock"));
+            capabilities.setCapability("skipUnlock", Boolean.parseBoolean(SteviaContext.getParam("skipUnlock")));
         }
         if (!StringUtils.isEmpty(SteviaContext.getParam(AndroidMobileCapabilityType.USE_KEYSTORE))) {
             capabilities.setCapability(AndroidMobileCapabilityType.USE_KEYSTORE, SteviaContext.getParam(AndroidMobileCapabilityType.USE_KEYSTORE));
