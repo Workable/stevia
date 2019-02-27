@@ -148,6 +148,9 @@ public class AppiumWebControllerFactoryImpl implements WebControllerFactory {
         if (!StringUtils.isEmpty(SteviaContext.getParam(IOSMobileCapabilityType.WDA_STARTUP_RETRIES))) {
             capabilities.setCapability(IOSMobileCapabilityType.WDA_STARTUP_RETRIES, SteviaContext.getParam(IOSMobileCapabilityType.WDA_STARTUP_RETRIES));
         }
+        if (!StringUtils.isEmpty(SteviaContext.getParam("shouldUseSingletonTestManager"))) {
+            capabilities.setCapability("shouldUseSingletonTestManager", Boolean.parseBoolean(SteviaContext.getParam("shouldUseSingletonTestManager")));
+        }
     }
 
 
