@@ -423,6 +423,24 @@ public class Verify extends WebComponent {
     }
 
     /**
+     * Check text in an element - Ignore case.
+     *
+     * @param locator      the locator of the element
+     * @param expectedText the expected text
+     */
+    public void textIgnoreCase(String locator, String expectedText) {
+        try {
+            Assert.assertEquals(controller().getText(locator).toUpperCase(), expectedText.toUpperCase());
+            highlightPass(locator);
+            info(ELEMENT_LOCATOR + locator + FOUND_WITH_TEXT + expectedText + "'!");
+        } catch (AssertionError e) {
+            highlightFail(locator);
+            error(ELEMENT_LOCATOR + locator + NOT_FOUND_WITH_TEXT + expectedText + "'!");
+            throw e;
+        }
+    }
+
+    /**
      * Check text in an element with regEx.
      *
      * @param locator  the locator of the element
