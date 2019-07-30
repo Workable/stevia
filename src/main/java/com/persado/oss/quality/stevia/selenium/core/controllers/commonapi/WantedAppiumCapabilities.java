@@ -1,4 +1,4 @@
-package com.persado.oss.quality.stevia.selenium.core.controllers.factories;
+package com.persado.oss.quality.stevia.selenium.core.controllers.commonapi;
 
 /*
  * #%L
@@ -47,9 +47,9 @@ import static io.appium.java_client.remote.MobileCapabilityType.*;
 /**
  * Created by dimitris giannakos on 25/08/2018.
  */
-class WantedAppiumCapabilities {
+public class WantedAppiumCapabilities {
 
-    static final List<String> IOS_DEFAULT_CAPABILITIES = Stream.of(
+    public static final List<String> IOS_DEFAULT_CAPABILITIES = Stream.of(
             USE_PREBUILT_WDA,
             WDA_LOCAL_PORT,
             WDA_CONNECTION_TIMEOUT,
@@ -64,7 +64,7 @@ class WantedAppiumCapabilities {
             "useJSONSource"
     ).collect(Collectors.toList());
 
-    static final List<String> COMMON_CAPABILITIES = Stream.of(
+    public static final List<String> COMMON_CAPABILITIES = Stream.of(
             DEVICE_NAME,
             UDID,
             PLATFORM_NAME,
@@ -76,7 +76,7 @@ class WantedAppiumCapabilities {
             CLEAR_SYSTEM_FILES
     ).collect(Collectors.toList());
 
-    static final List<String> ANDROID_DEFAULT_CAPABILITIES = Stream.of(
+    public static final List<String> ANDROID_DEFAULT_CAPABILITIES = Stream.of(
             APP_PACKAGE,
             APP_WAIT_PACKAGE,
             APP_ACTIVITY,
@@ -93,7 +93,7 @@ class WantedAppiumCapabilities {
             "skipUnlock"
     ).collect(Collectors.toList());
 
-    static final List<String> TEST_DROID_CAPABILITIES = Stream.of(
+    public static final List<String> TEST_DROID_CAPABILITIES = Stream.of(
             "testdroid_username",
             "testdroid_password",
             "testdroid_password",
@@ -105,14 +105,14 @@ class WantedAppiumCapabilities {
             "testdroid_app"
     ).collect(Collectors.toList());
 
-    static final List<String> SAUCE_LABS_CAPABILITIES = Stream.of(
+    public static final List<String> SAUCE_LABS_CAPABILITIES = Stream.of(
             "username",
             "access-key",
             "deviceType",
             "appiumVersion"
     ).collect(Collectors.toList());
 
-    static final List<String> SELENIUM_GRID_CAPABILITIES = Stream.of(
+    public static final List<String> SELENIUM_GRID_CAPABILITIES = Stream.of(
             "deviceName",
             "deviceType"
     ).collect(Collectors.toList());

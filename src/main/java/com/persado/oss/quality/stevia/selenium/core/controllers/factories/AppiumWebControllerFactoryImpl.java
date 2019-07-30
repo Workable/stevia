@@ -40,6 +40,7 @@ import com.persado.oss.quality.stevia.selenium.core.SteviaContext;
 import com.persado.oss.quality.stevia.selenium.core.WebController;
 import com.persado.oss.quality.stevia.selenium.core.controllers.AppiumWebController;
 import com.persado.oss.quality.stevia.selenium.core.controllers.SteviaWebControllerFactory;
+import com.persado.oss.quality.stevia.selenium.core.controllers.commonapi.WantedAppiumCapabilities;
 import io.appium.java_client.AppiumDriver;
 import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.ios.IOSDriver;
