@@ -61,7 +61,6 @@ import java.util.List;
 public class AppiumWebControllerFactoryImpl implements WebControllerFactory {
 
     private static final Logger LOG = LoggerFactory.getLogger(AppiumWebControllerFactoryImpl.class);
-    public static final String APPIUM_SERVER_URL = "http://" + SteviaContext.getParam(SteviaWebControllerFactory.RC_HOST) + ":" + SteviaContext.getParam(SteviaWebControllerFactory.RC_PORT) + "/wd/hub";
 
     @Override
     public WebController initialize(ApplicationContext context, WebController controller) {
