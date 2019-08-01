@@ -196,7 +196,7 @@ public class SteviaTestBase extends AbstractTestNGSpringContextTests implements 
      */
     @BeforeTest(alwaysRun = true)
     protected final void contextInitBeforeTest(ITestContext testContext) throws Exception {
-
+        testInitialisation(testContext);
         Map<String, String> parameters = testContext.getCurrentXmlTest().getParameters();
         testContext.getCurrentXmlTest().setParallel(XmlSuite.ParallelMode.getValidParallel(parameters.get("parallelSetup")));
 
@@ -205,7 +205,6 @@ public class SteviaTestBase extends AbstractTestNGSpringContextTests implements 
             startRCServer();
         }
         String parallelSetup = testContext.getSuite().getParallel();
-        testInitialisation(testContext);
         if (parallelSetup == null || parallelSetup.isEmpty() || parallelSetup.equalsIgnoreCase("false") || parallelSetup.equalsIgnoreCase("none") || parallelSetup.equalsIgnoreCase("tests")) {
 
             STEVIA_TEST_BASE_LOG.warn("*************************************************************************************");
