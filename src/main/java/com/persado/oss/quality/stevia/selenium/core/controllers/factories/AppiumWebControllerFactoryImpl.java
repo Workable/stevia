@@ -205,6 +205,10 @@ public class AppiumWebControllerFactoryImpl implements WebControllerFactory {
         if (variableExists(AndroidMobileCapabilityType.NO_SIGN)) {
             capabilities.setCapability(AndroidMobileCapabilityType.NO_SIGN, Boolean.parseBoolean(SteviaContext.getParam(AndroidMobileCapabilityType.NO_SIGN)));
         }
+
+        if (variableExists("adbExecTimeout")) {
+            capabilities.setCapability("adbExecTimeout", Integer.parseInt(SteviaContext.getParam("adbExecTimeout")));
+        }
     }
 
     private void setupTestDroidParameters(DesiredCapabilities capabilities) {
