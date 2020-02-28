@@ -37,9 +37,7 @@ package com.persado.oss.quality.stevia.selenium.core;
  */
 
 import org.openqa.selenium.Point;
-import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.internal.Locatable;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,18 +53,15 @@ public class CustomExpectedCondition {
     private static final Logger conditionsLogger = LoggerFactory.getLogger(CustomExpectedCondition.class);
 
     public static ExpectedCondition<Boolean> elementHasStoppedMoving(final WebElement element) {
-        return new ExpectedCondition<Boolean>() {
-            @Override
-            public Boolean apply(WebDriver driver) {
-                Point initialLocation = element.getLocation();
-                try {
-                    Thread.sleep(50);
-                }catch (InterruptedException e){
-                    conditionsLogger.error(e.getMessage());
-                }
-                Point finalLocation = element.getLocation();
-                return initialLocation.equals(finalLocation);
+        return driver -> {
+            Point initialLocation = element.getLocation();
+            try {
+                Thread.sleep(50);
+            }catch (InterruptedException e){
+                conditionsLogger.error(e.getMessage());
             }
+            Point finalLocation = element.getLocation();
+            return initialLocation.equals(finalLocation);
         };
     }
 }
