@@ -230,5 +230,15 @@ public class ReportingWebDriverEventListener implements WebDriverEventListener {
 
     }
 
+    @Override
+    public void beforeGetText(WebElement webElement, WebDriver webDriver) {
+
+    }
+
+    @Override
+    public void afterGetText(WebElement webElement, WebDriver webDriver, String s) {
+
+    }
+
 
 }

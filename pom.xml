@@ -428,8 +428,8 @@
 	<!-- Shared version number properties -->
 	<properties>
 		<org.springframework.version>5.0.2.RELEASE</org.springframework.version>
-		<selenium.version>3.12.0</selenium.version>
-		<appium.version>6.1.0</appium.version>
+		<selenium.version>3.141.59</selenium.version>
+		<appium.version>7.3.0</appium.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.scm.id>stevia</project.scm.id>
 	</properties>
