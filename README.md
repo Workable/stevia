@@ -39,3 +39,9 @@ The following features are supported in the current Stevia build (new features h
 If you changed your mind, or something got wrong:
 - mvn release:rollback
 - mvn release:clean
+
+## Deploying a Snapshot to JFrog
+
+- mvn clean deploy -DskipTests
+
+ Artifact is deployed under maven-local/com/persado/oss/quality/stevia/stevia-core/
