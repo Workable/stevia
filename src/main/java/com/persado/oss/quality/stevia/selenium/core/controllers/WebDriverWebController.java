@@ -37,6 +37,7 @@ package com.persado.oss.quality.stevia.selenium.core.controllers;
  */
 
 
+import com.persado.oss.quality.stevia.annotations.AnnotationsHelper;
 import com.persado.oss.quality.stevia.network.http.HttpCookie;
 import com.persado.oss.quality.stevia.selenium.core.CustomExpectedCondition;
 import com.persado.oss.quality.stevia.selenium.core.SteviaContext;
@@ -133,6 +134,9 @@ public class WebDriverWebController extends WebControllerBase implements WebCont
     public void setDriver(WebDriver driver) {
         this.driver = driver;
     }
+
+    public static Logger LOG = LoggerFactory.getLogger(AnnotationsHelper.class);
+
     /*
      * (non-Javadoc)
      *
@@ -374,21 +378,8 @@ public class WebDriverWebController extends WebControllerBase implements WebCont
         moveToElement(locator);
         WebElement element = waitForElement(locator);
         getFocus(locator);
-        try{
-            executeJavascript("$(\"" + locator.replace("css=","") + "\").select()");
-        }
-        catch(Exception e){
-            try{
-                executeJavascript("document.querySelector(\"" + locator.replace("css=","") + "\").select()");
-            }
-            catch(Exception f){
-                info("Warning input may not be overwriten if already exists");
-            }
-        }
+        executeJavascript("arguments[0].select()", element);
         element.sendKeys(value);
-        if (!value.isEmpty()) {
-            info("Value '" + value + "' was typed in element with locator '" + locator + "'");
-        }
     }
 
     /*
@@ -946,7 +937,8 @@ public class WebDriverWebController extends WebControllerBase implements WebCont
      */
     @Override
     public boolean isInputChecked(String locator) {
-        return (Boolean) executeJavascript("return $(\"" + locator.replace("css=","") + "\").is(':checked')");
+        List<WebElement> elements = findElements(locator);
+        return elements.get(0).isSelected();
     }
 
     /**
@@ -1662,7 +1654,7 @@ public class WebDriverWebController extends WebControllerBase implements WebCont
         long startTime = System.currentTimeMillis();
         do {
             try {
-                ajaxComplete = ((Boolean) executeJavascript("return jQuery.active == 0")).booleanValue();
+                ajaxComplete = (Boolean) executeJavascript("return jQuery.active == 0");
                 Thread.sleep(THREAD_SLEEP);
             } catch (InterruptedException e) {
                 error(e.getMessage());
@@ -1671,7 +1663,7 @@ public class WebDriverWebController extends WebControllerBase implements WebCont
         } while (!ajaxComplete && endTime - startTime <= milliseconds);
 
         if (!ajaxComplete) {
-            warn("The AJAX call was not completed with in " + milliseconds + " ms");
+            throw new TimeoutException("The AJAX call was not completed with in " + milliseconds + " ms");
         }
     }
 
@@ -1771,9 +1763,11 @@ public class WebDriverWebController extends WebControllerBase implements WebCont
             highlight(locator);
         }
         if (isComponentEditable(locator)) {
-            executeJavascript("$(\"" + locator.substring(4) + "\").click()");
+            WebElement element = SteviaContext.getWebController().findElements(locator).get(0);
+            executeJavascript("arguments[0].click()", element);
         }
         waitForAjaxComplete(SteviaContext.getWaitForAjaxComplete());
+        LOG.info("The element with locator '" + locator + "' was clicked with JavaScript call");
     }
 
     @Override
@@ -1782,18 +1776,29 @@ public class WebDriverWebController extends WebControllerBase implements WebCont
             highlight(locator);
         }
         if (isComponentEditable(locator)) {
-            executeJavascript("$(\"" + locator.substring(4) + "\").val('" + text + "')");
+            WebElement element = SteviaContext.getWebController().findElements(locator).get(0);
+            executeJavascript("function setInputValue(element, value) {\n" +
+                            "  const previousValue = element.value;\n" +
+                            "  element.value = value;\n" +
+                            "  const tracker = element._valueTracker;\n" +
+                            "  if (tracker) {\n" +
+                            "    tracker.setValue(previousValue);\n" +
+                            "  }\n" +
+                            "  element.dispatchEvent(new Event('change', { bubbles: true }));\n" +
+                            "}\n" +
+                            "setInputValue(arguments[0],'" + text + "');",
+                    element);
         }
     }
 
     @Override
     public void scrollToTop() {
-        executeJavascript("$('body').scrollTop(0)");
+        executeJavascript("window.scrollTo(0,0)");
     }
 
     @Override
     public void scrollToBottom() {
-        executeJavascript("$('body').scrollTop($(document).height())");
+        executeJavascript("window.scrollTo(0,document.body.scrollHeight)");
     }
 
     @Override
