@@ -67,7 +67,7 @@ class VoidController implements WebController {
     @Override
     public void clearStorage() {
     }
-    
+
     @Override
     public void close() {
         // TODO Auto-generated method stub
@@ -123,12 +123,17 @@ class VoidController implements WebController {
 
     @Override
     public void waitForElementToBeClickable(String locator, long waitSeconds) {
-        
+
     }
 
     @Override
     public void waitForElementToStopMoving(String locator) {
         // TODO Auto-generated method stub
+    }
+
+    @Override
+    public void waitForElementRefreshed(String locator) {
+
     }
 
     @Override
@@ -284,7 +289,7 @@ class VoidController implements WebController {
 
     @Override
     public void takeScreenShot(File destDir, String desiredName) throws IOException {
-        
+
     }
 
     @Override

@@ -159,6 +159,9 @@ public interface WebController {
      */
     void waitForElementToStopMoving(String locator);
 
+
+    void waitForElementRefreshed(String locator);
+
     /**
      * Find elements.
      *

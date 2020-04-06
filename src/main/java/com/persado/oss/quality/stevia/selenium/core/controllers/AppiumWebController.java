@@ -344,6 +344,11 @@ public class AppiumWebController extends WebControllerBase implements WebControl
         waitForElementToStopMoving(locator, SteviaContext.getWaitForElement());
     }
 
+    @Override
+    public void waitForElementRefreshed(String locator) {
+
+    }
+
     /*
      * (non-Javadoc)
      *
