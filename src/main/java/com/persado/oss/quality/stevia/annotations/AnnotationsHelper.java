@@ -42,6 +42,8 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 import org.openqa.selenium.WebDriverException;
 import org.slf4j.Logger;
@@ -145,7 +147,7 @@ public class AnnotationsHelper implements ApplicationContextAware {
 	 * mask existing controller with requestedControllerClass
 	 * @param requestedControllerClass
 	 */
-	private void controllerMask(Class<? extends WebController> requestedControllerClass) {
+	private void controllerMask(Class<? extends WebController> requestedControllerClass) throws InterruptedException, ExecutionException, TimeoutException {
 		WebController currentControllerObj = SteviaContext.getWebController();
 		Class<? extends WebController> currentControllerClass = currentControllerObj.getClass();
 		String curControllerKey = currentControllerClass.getCanonicalName();
