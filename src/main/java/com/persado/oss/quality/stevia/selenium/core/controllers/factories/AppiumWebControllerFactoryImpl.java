@@ -49,6 +49,8 @@ import io.appium.java_client.remote.AndroidMobileCapabilityType;
 import io.appium.java_client.remote.IOSMobileCapabilityType;
 import io.appium.java_client.remote.MobileCapabilityType;
 import org.apache.commons.lang3.StringUtils;
+import org.openqa.selenium.Capabilities;
+import org.openqa.selenium.Platform;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.LocalFileDetector;
 import org.slf4j.Logger;
@@ -68,75 +70,29 @@ public class AppiumWebControllerFactoryImpl implements WebControllerFactory {
         AppiumWebController appiumController = (AppiumWebController) controller;
         AppiumDriver driver = null;
 
-        DesiredCapabilities capabilities = new DesiredCapabilities();
-
-        setupCommonCapabilities(capabilities);
-        setCloudServiceCapabilities(capabilities);
-
+        Capabilities capabilities = SteviaContext.getCapabilities();
 
         LOG.info("Appium Desired capabilities {}", new Object[]{capabilities});
-
-
-        String platform = SteviaContext.getParam(MobileCapabilityType.PLATFORM_NAME);
-        setCapabilitiesForPlatform(capabilities, platform);
-        driver = getDriverForPlatform(capabilities, platform);
+        driver = getDriverForPlatform(capabilities);
         driver.setFileDetector(new LocalFileDetector());
-
-        if (variableExists(SteviaWebControllerFactory.TARGET_HOST_URL) && variableExists(SteviaWebControllerFactory.BROWSER)) {
-            driver.get(SteviaContext.getParam(SteviaWebControllerFactory.TARGET_HOST_URL));
-        }
 
         appiumController.setDriver(driver);
         return appiumController;
     }
 
-    private void setCloudServiceCapabilities(DesiredCapabilities capabilities) {
-        String cloudService = SteviaContext.getParam("cloudService");
-        if (cloudService.equalsIgnoreCase("SauceLabs")) {
-            //Sauce Labs parameters
-            setupSauceLabsParams(capabilities);
-        }
-
-        if (cloudService.equalsIgnoreCase("Testdroid")) {
-            //TestDroid parameters
-            setupTestDroidParameters(capabilities);
-        }
-
-        if (cloudService.equalsIgnoreCase("SeleniumGrid")) {
-            //Selenium Grid test level parameters
-            setupSeleniumGridParameters(capabilities);
-        }
-    }
-
-    private void setCapabilitiesForPlatform(DesiredCapabilities capabilities, String platform){
-        if (platform.compareTo("Android") == 0) {
-            setupAndroidCapabilities(capabilities);
-        } else if (platform.compareTo("iOS") == 0) {
-            setupIOSCapabilities(capabilities);
-        }
-    }
-
-    private AppiumDriver getAppiumDriverForPlatform(String platform, DesiredCapabilities capabilities) throws MalformedURLException {
-        if (platform.compareTo("Android") == 0) {
-            return getAndroidDriverWithCapabilities(capabilities);
-        } else if (platform.compareTo("iOS") == 0) {
-            return getIOSDriverWithCapabilities(capabilities);
-        }
-        throw new IllegalArgumentException(String.format("Driver for platform %s not found", platform));
-    }
-
-    private AppiumDriver getDriverForPlatform(DesiredCapabilities capabilities, String platform) {
-        AppiumDriver driver;
+    private AppiumDriver getDriverForPlatform(Capabilities capabilities) {
+        AppiumDriver driver = null;
+        String platform = capabilities.getCapability(MobileCapabilityType.PLATFORM_NAME).toString();
         try {
-            driver = getAppiumDriverForPlatform(platform, capabilities);
+            if (platform.equals("Android")) {
+                driver = new AndroidDriver(buildAppiumUrl(), capabilities);
+            } else if (platform.equals("iOS")) {
+                driver = new IOSDriver(buildAppiumUrl(), capabilities);
+            }
         } catch (MalformedURLException e) {
-            throw new IllegalArgumentException(e.getMessage(), e);
+            throw new IllegalArgumentException(String.format("Driver for platform %s not found", platform));
         }
         return driver;
-    }
-
-    private IOSDriver getIOSDriverWithCapabilities(DesiredCapabilities capabilities) throws MalformedURLException {
-        return new IOSDriver(buildAppiumUrl(), capabilities);
     }
 
     private URL buildAppiumUrl() throws MalformedURLException {
@@ -144,14 +100,6 @@ public class AppiumWebControllerFactoryImpl implements WebControllerFactory {
         String rcPort = SteviaContext.getParam(SteviaWebControllerFactory.RC_PORT);
         String url = String.format("http://%s:%s/wd/hub", rcHost, rcPort);
         return new URL(url);
-    }
-
-    private AndroidDriver getAndroidDriverWithCapabilities(DesiredCapabilities capabilities) throws MalformedURLException {
-        return new AndroidDriver(buildAppiumUrl(), capabilities);
-    }
-
-    private void setupSeleniumGridParameters(DesiredCapabilities capabilities) {
-        setCapabilitiesInList(capabilities, WantedAppiumCapabilities.SELENIUM_GRID_CAPABILITIES);
     }
 
     private boolean variableExists(String param) {
@@ -183,36 +131,6 @@ public class AppiumWebControllerFactoryImpl implements WebControllerFactory {
         if (variableExists(capabilityToSet)) {
             capabilities.setCapability(capabilityToSet, SteviaContext.getParam(capabilityToSet));
         }
-    }
-
-    private void setupCommonCapabilities(DesiredCapabilities capabilities) {
-        if (variableExists(SteviaWebControllerFactory.BROWSER)) {
-            capabilities.setCapability(MobileCapabilityType.BROWSER_NAME, SteviaContext.getParam(SteviaWebControllerFactory.BROWSER));
-        }
-        if (variableExists(MobileCapabilityType.NEW_COMMAND_TIMEOUT)) {
-            capabilities.setCapability(MobileCapabilityType.NEW_COMMAND_TIMEOUT, Integer.parseInt(SteviaContext.getParam(MobileCapabilityType.NEW_COMMAND_TIMEOUT)));
-        }
-        setCapabilitiesInList(capabilities, WantedAppiumCapabilities.COMMON_CAPABILITIES);
-    }
-
-    private void setupAndroidCapabilities(DesiredCapabilities capabilities) {
-        capabilities.setCapability("appium:chromeOptions", ImmutableMap.of("w3c", false));
-        capabilities.setCapability(AndroidMobileCapabilityType.RECREATE_CHROME_DRIVER_SESSIONS, true);
-        setCapabilitiesInList(capabilities, WantedAppiumCapabilities.ANDROID_DEFAULT_CAPABILITIES);
-        if (variableExists("skipUnlock")) {
-            capabilities.setCapability("skipUnlock", SteviaContext.getParam("skipUnlock"));
-        }
-        if (variableExists(AndroidMobileCapabilityType.NO_SIGN)) {
-            capabilities.setCapability(AndroidMobileCapabilityType.NO_SIGN, Boolean.parseBoolean(SteviaContext.getParam(AndroidMobileCapabilityType.NO_SIGN)));
-        }
-    }
-
-    private void setupTestDroidParameters(DesiredCapabilities capabilities) {
-        setCapabilitiesInList(capabilities, WantedAppiumCapabilities.TEST_DROID_CAPABILITIES);
-    }
-
-    private void setupSauceLabsParams(DesiredCapabilities capabilities) {
-        setCapabilitiesInList(capabilities, WantedAppiumCapabilities.SAUCE_LABS_CAPABILITIES);
     }
 
     @Override

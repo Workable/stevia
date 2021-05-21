@@ -94,27 +94,4 @@ public class WantedAppiumCapabilities {
             "skipUnlock"
     ).collect(Collectors.toList());
 
-    public static final List<String> TEST_DROID_CAPABILITIES = Stream.of(
-            "testdroid_username",
-            "testdroid_password",
-            "testdroid_password",
-            "testdroid_apiKey",
-            "testdroid_target",
-            "testdroid_project",
-            "testdroid_testrun",
-            "testdroid_device",
-            "testdroid_app"
-    ).collect(Collectors.toList());
-
-    public static final List<String> SAUCE_LABS_CAPABILITIES = Stream.of(
-            "username",
-            "access-key",
-            "deviceType",
-            "appiumVersion"
-    ).collect(Collectors.toList());
-
-    public static final List<String> SELENIUM_GRID_CAPABILITIES = Stream.of(
-            "deviceName",
-            "deviceType"
-    ).collect(Collectors.toList());
 }

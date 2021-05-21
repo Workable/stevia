@@ -117,10 +117,6 @@ public class SteviaTestBase extends AbstractTestNGSpringContextTests implements 
         propNames.forEach(p ->
                 parameters.put(p, System.getProperty(p)));
 
-        //if the suite needs RC server, we start it here
-        if (parameters.get("driverType").compareTo("webdriver") != 0 && parameters.get("debugging").compareTo(TRUE) == 0 && !isRCStarted) {
-            startRCServer();
-        }
         setSuiteOutputDir(testContext.getSuite().getOutputDirectory());
 
         //stevia context init
