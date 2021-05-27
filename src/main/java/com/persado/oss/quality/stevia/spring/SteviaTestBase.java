@@ -247,6 +247,17 @@ public class SteviaTestBase extends AbstractTestNGSpringContextTests implements 
     }
 
     /**
+     * Initialize SteviaContext's testClassName and testMethodName variables
+     * @param context
+     * @param method
+     */
+    @BeforeMethod(alwaysRun = true)
+    protected final void setContextAttributes(ITestContext context, Method method) {
+        SteviaContext.setTestClassName(getClass().getSimpleName());
+        SteviaContext.setTestMethodName(method.getName());
+    }
+
+    /**
      * Clean context on class.
      *
      * @param testContext the test context
