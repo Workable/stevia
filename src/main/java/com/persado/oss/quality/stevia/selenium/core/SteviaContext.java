@@ -89,7 +89,7 @@ public class SteviaContext {
         private Map<String, String> paramsRegistry;
 
         /**
-         * The desired capoabilities
+         * The desired capabilities
          */
         private Capabilities capabilities;
 
@@ -102,6 +102,9 @@ public class SteviaContext {
         private ApplicationContext context;
 
         private TestState state;
+
+        private String testClassName;
+        private String testMethodName;
 
         /**
          * Clear context.
@@ -182,6 +185,14 @@ public class SteviaContext {
         public void setContext(ApplicationContext context) {
             this.context = context;
         }
+
+        public String getTestClassName() { return testClassName; }
+
+        public void setTestClassName(String testClassName) { this.testClassName = testClassName; }
+
+        public String getTestMethodName() { return testMethodName; }
+
+        public void setTestMethodName(String testMethodName) { this.testMethodName = testMethodName; }
     }
 
 
@@ -387,5 +398,12 @@ public class SteviaContext {
         return innerContext.get().getContext();
     }
 
+    public static String getTestClassName() { return innerContext.get().getTestClassName(); }
+
+    public static void setTestClassName(String testClassName) { innerContext.get().setTestClassName(testClassName); }
+
+    public static String getTestMethodName() { return innerContext.get().getTestMethodName(); }
+
+    public static void setTestMethodName(String testMethodName) { innerContext.get().setTestMethodName(testMethodName); }
 
 }

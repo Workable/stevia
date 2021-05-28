@@ -224,6 +224,9 @@ public class SteviaTestBase extends AbstractTestNGSpringContextTests implements 
 
             initializeStevia(parameters);
         }
+
+        // Set testClassName
+        SteviaContext.setTestClassName(getClass().getSimpleName());
     }
 
     /**
@@ -233,7 +236,7 @@ public class SteviaTestBase extends AbstractTestNGSpringContextTests implements 
      * @throws Exception the exception
      */
     @BeforeMethod(alwaysRun = true)
-    protected final void contextInitBeforeMethod(ITestContext testContext) throws Exception {
+    protected final void contextInitBeforeMethod(ITestContext testContext, Method method) throws Exception {
         Map<String, String> parameters = testContext.getSuite().getXmlSuite().getAllParameters();
 
         if (testContext.getSuite().getParallel().equalsIgnoreCase("methods")) {
@@ -244,6 +247,9 @@ public class SteviaTestBase extends AbstractTestNGSpringContextTests implements 
 
             initializeStevia(parameters);
         }
+
+        // Set testMethodName
+        SteviaContext.setTestMethodName(method.getName());
     }
 
     /**
