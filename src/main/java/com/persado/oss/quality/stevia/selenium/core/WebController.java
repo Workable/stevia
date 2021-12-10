@@ -41,7 +41,9 @@ import com.persado.oss.quality.stevia.selenium.core.controllers.commonapi.KeyInf
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.html5.LocalStorage;
 import org.openqa.selenium.interactions.Actions;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -54,28 +56,38 @@ import java.util.Set;
  * The Interface WebController.
  */
 public interface WebController {
-
-    /**
-     * Enable actions logging.
-     */
-    void enableActionsLogging();
-
-    /**
-     * Disable logging messages in TestNG Reports.
-     * Applies only in WebDriver
-     */
-    void disableActionsLogging();
-
     /**
      * Clear local and session storage
      * Applies only in WebDriverWebController
      */
     void clearStorage();
 
+
+    /**
+     * Get browser's local storage
+     */
+    LocalStorage getLocalStorage();
+
+    /**
+     * Set item in browser's local storage
+     */
+    void setLocalStorageItem(String key, String value);
+
+    /**
+     * Set item in browser's local storage
+     */
+    String getLocalStorageItem(String key);
+
+    /**
+     * Delete item from browser's local storage
+     *
+     * @param key
+     */
+    void deleteLocalStorageItem(String key);
+
     /**
      * Close the current window, quitting the browser if it's the last window currently open.
      */
-
     void close();
 
     /**
@@ -1183,14 +1195,13 @@ public interface WebController {
 
 
     /**
-     *
      * @param startX
      * @param startY
      * @param endX
      * @param endY
      * @param duration
      */
-    void swipe(int startX, int startY, int endX, int endY,int duration);
+    void swipe(int startX, int startY, int endX, int endY, int duration);
 
     /**
      * Finds an element based on childLocator that is child element of parent

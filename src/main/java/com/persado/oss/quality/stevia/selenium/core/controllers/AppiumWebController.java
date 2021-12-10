@@ -52,9 +52,8 @@ import io.appium.java_client.touch.offset.ElementOption;
 import io.appium.java_client.touch.offset.PointOption;
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.*;
+import org.openqa.selenium.html5.LocalStorage;
 import org.openqa.selenium.interactions.Actions;
-import org.openqa.selenium.interactions.KeyInput;
-import org.openqa.selenium.interactions.Sequence;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
@@ -62,10 +61,14 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
+
 import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 
 // TODO: Auto-generated Javadoc
@@ -181,6 +184,26 @@ public class AppiumWebController extends WebControllerBase implements WebControl
 
     }
 
+    @Override
+    public LocalStorage getLocalStorage() {
+        return null;
+    }
+
+    @Override
+    public void setLocalStorageItem(String key, String value) {
+
+    }
+
+    @Override
+    public String getLocalStorageItem(String key) {
+        return null;
+    }
+
+    @Override
+    public void deleteLocalStorageItem(String key) {
+
+    }
+
     /*
      * (non-Javadoc)
      *
@@ -202,13 +225,13 @@ public class AppiumWebController extends WebControllerBase implements WebControl
         } while (!conditionResult && System.currentTimeMillis() - startTime <= waitSeconds * TO_MILLIS);
     }
 
-	/*
+    /*
      * (non-Javadoc)
-	 *
-	 * @see
-	 * com.persado.oss.quality.stevia.selenium.core.WebController#waitForElement
-	 * (org.openqa.selenium.String)
-	 */
+     *
+     * @see
+     * com.persado.oss.quality.stevia.selenium.core.WebController#waitForElement
+     * (org.openqa.selenium.String)
+     */
 
     /**
      * Find locator substring.
@@ -313,13 +336,13 @@ public class AppiumWebController extends WebControllerBase implements WebControl
         return waitForElementPresence(locator, SteviaContext.getWaitForElement());
     }
 
-	/*
+    /*
      * (non-Javadoc)
-	 *
-	 * @see
-	 * com.persado.oss.quality.stevia.selenium.core.WebController#waitForElement
-	 * (java.lang.String)
-	 */
+     *
+     * @see
+     * com.persado.oss.quality.stevia.selenium.core.WebController#waitForElement
+     * (java.lang.String)
+     */
 
     public WebElement waitForElementPresence(String locator, long waitSeconds) {
         WebDriverWait wait = new WebDriverWait(driver, waitSeconds, THREAD_SLEEP);
@@ -1332,22 +1355,12 @@ public class AppiumWebController extends WebControllerBase implements WebControl
         return driver.getCurrentUrl();
     }
 
-    @Override
-    public void enableActionsLogging() {
-
-    }
-
-    @Override
-    public void disableActionsLogging() {
-
-    }
-
     /*
-         * (non-Javadoc)
-         *
-         * @see
-         * com.persado.oss.quality.stevia.selenium.core.WebController#close()
-         */
+     * (non-Javadoc)
+     *
+     * @see
+     * com.persado.oss.quality.stevia.selenium.core.WebController#close()
+     */
     @Override
     public void close() {
         driver.close();
@@ -1842,7 +1855,7 @@ public class AppiumWebController extends WebControllerBase implements WebControl
 
     @Override
     public void tap(int x, int y) {
-        new TouchAction(driver).tap(TapOptions.tapOptions().withPosition(PointOption.point(x,y))).perform();
+        new TouchAction(driver).tap(TapOptions.tapOptions().withPosition(PointOption.point(x, y))).perform();
     }
 
     @Override

@@ -93,13 +93,7 @@ public class WebDriverWebControllerFactoryImpl implements WebControllerFactory {
         if (SteviaContext.getParam(SteviaWebControllerFactory.TARGET_HOST_URL) != null) {
             driver.get(SteviaContext.getParam(SteviaWebControllerFactory.TARGET_HOST_URL));
         }
-
         wdController.setDriver(driver);
-
-        // Enable web driver actions logging
-        if (SteviaContext.getParam(SteviaWebControllerFactory.ACTIONS_LOGGING).compareTo(SteviaWebControllerFactory.TRUE) == 0) {
-            wdController.enableActionsLogging();
-        }
         return wdController;
     }
 

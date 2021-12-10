@@ -42,6 +42,7 @@ import com.persado.oss.quality.stevia.selenium.core.controllers.commonapi.KeyInf
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.html5.LocalStorage;
 import org.openqa.selenium.interactions.Actions;
 
 import java.io.File;
@@ -53,21 +54,29 @@ import java.util.Set;
 class VoidController implements WebController {
 
     @Override
-    public void enableActionsLogging() {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void disableActionsLogging() {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
     public void clearStorage() {
     }
-    
+
+    @Override
+    public LocalStorage getLocalStorage() {
+        return null;
+    }
+
+    @Override
+    public void setLocalStorageItem(String key, String value) {
+
+    }
+
+    @Override
+    public String getLocalStorageItem(String key) {
+        return null;
+    }
+
+    @Override
+    public void deleteLocalStorageItem(String key) {
+
+    }
+
     @Override
     public void close() {
         // TODO Auto-generated method stub
@@ -123,7 +132,7 @@ class VoidController implements WebController {
 
     @Override
     public void waitForElementToBeClickable(String locator, long waitSeconds) {
-        
+
     }
 
     @Override
@@ -284,7 +293,7 @@ class VoidController implements WebController {
 
     @Override
     public void takeScreenShot(File destDir, String desiredName) throws IOException {
-        
+
     }
 
     @Override
