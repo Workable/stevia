@@ -45,10 +45,11 @@ import com.persado.oss.quality.stevia.selenium.core.controllers.commonapi.KeyInf
 import com.persado.oss.quality.stevia.selenium.core.controllers.webdriverapi.ByExtended;
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.*;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.html5.LocalStorage;
 import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.remote.RemoteExecuteMethod;
+import org.openqa.selenium.remote.RemoteWebDriver;
+import org.openqa.selenium.remote.html5.RemoteWebStorage;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
@@ -176,13 +177,9 @@ public class WebDriverWebController extends WebControllerBase implements WebCont
 
     @Override
     public LocalStorage getLocalStorage() {
-        if (driver instanceof ChromeDriver) {
-            return ((ChromeDriver) driver).getLocalStorage();
-        } else if (driver instanceof FirefoxDriver) {
-            return ((FirefoxDriver) driver).getLocalStorage();
-        } else {
-            throw new UnsupportedOperationException("Get local storage is not supported for driver!");
-        }
+        RemoteExecuteMethod executeMethod = new RemoteExecuteMethod((RemoteWebDriver) driver);
+        RemoteWebStorage webStorage = new RemoteWebStorage(executeMethod);
+        return webStorage.getLocalStorage();
     }
 
     /*
