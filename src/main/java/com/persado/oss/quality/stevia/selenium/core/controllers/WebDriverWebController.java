@@ -43,11 +43,13 @@ import com.persado.oss.quality.stevia.selenium.core.SteviaContext;
 import com.persado.oss.quality.stevia.selenium.core.WebController;
 import com.persado.oss.quality.stevia.selenium.core.controllers.commonapi.KeyInfo;
 import com.persado.oss.quality.stevia.selenium.core.controllers.webdriverapi.ByExtended;
-import com.persado.oss.quality.stevia.selenium.listeners.ReportingWebDriverEventListener;
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.*;
+import org.openqa.selenium.html5.LocalStorage;
 import org.openqa.selenium.interactions.Actions;
-import org.openqa.selenium.support.events.EventFiringWebDriver;
+import org.openqa.selenium.remote.RemoteExecuteMethod;
+import org.openqa.selenium.remote.RemoteWebDriver;
+import org.openqa.selenium.remote.html5.RemoteWebStorage;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
@@ -133,37 +135,51 @@ public class WebDriverWebController extends WebControllerBase implements WebCont
     public void setDriver(WebDriver driver) {
         this.driver = driver;
     }
-    /*
-     * (non-Javadoc)
-     *
-     * @see com.persado.oss.quality.stevia.selenium.core.WebController#
-     * enableActionsLogging()
-     */
-    @Override
-    public void enableActionsLogging() {
-        this.setDriver(new EventFiringWebDriver(driver).register(new ReportingWebDriverEventListener()));
-    }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see com.persado.oss.quality.stevia.selenium.core.WebController#
-     * disableActionsLogging()
-     */
-    @Override
-    public void disableActionsLogging() {
-        this.setDriver(new EventFiringWebDriver(driver).unregister(new ReportingWebDriverEventListener()));
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see com.persado.oss.quality.stevia.selenium.core.WebController#
-     * clearStorage()
+    /**
+     * Clear browser's local storage
      */
     @Override
     public void clearStorage() {
-        ((JavascriptExecutor) driver).executeScript("localStorage.clear();");
+        getLocalStorage().clear();
+    }
+
+    /**
+     * Set item in browser's local storage
+     *
+     * @param key
+     * @param value
+     */
+    @Override
+    public void setLocalStorageItem(String key, String value) {
+        getLocalStorage().setItem(key, value);
+    }
+
+    /**
+     * Get item from browser's local storage
+     *
+     * @param key
+     */
+    @Override
+    public String getLocalStorageItem(String key) {
+        return getLocalStorage().getItem(key);
+    }
+
+    /**
+     * Delete item from browser's local storage
+     *
+     * @param key
+     */
+    @Override
+    public void deleteLocalStorageItem(String key) {
+        getLocalStorage().removeItem(key);
+    }
+
+    @Override
+    public LocalStorage getLocalStorage() {
+        RemoteExecuteMethod executeMethod = new RemoteExecuteMethod((RemoteWebDriver) driver);
+        RemoteWebStorage webStorage = new RemoteWebStorage(executeMethod);
+        return webStorage.getLocalStorage();
     }
 
     /*
@@ -262,7 +278,11 @@ public class WebDriverWebController extends WebControllerBase implements WebCont
     @Override
     public WebElement waitForElement(String locator, long waitSeconds) {
         WebDriverWait wait = new WebDriverWait(driver, waitSeconds, THREAD_SLEEP);
-        return wait.until(ExpectedConditions.visibilityOfElementLocated(determineLocator(locator)));
+        WebElement webElement = wait.until(ExpectedConditions.visibilityOfElementLocated(determineLocator(locator)));
+        if (SteviaContext.getParam("highlight") != null && SteviaContext.getParam("highlight").equals("true")) {
+            highlight(webElement);
+        }
+        return webElement;
     }
 
     /*
@@ -374,14 +394,12 @@ public class WebDriverWebController extends WebControllerBase implements WebCont
         moveToElement(locator);
         WebElement element = waitForElement(locator);
         getFocus(locator);
-        try{
-            executeJavascript("$(\"" + locator.replace("css=","") + "\").select()");
-        }
-        catch(Exception e){
-            try{
-                executeJavascript("document.querySelector(\"" + locator.replace("css=","") + "\").select()");
-            }
-            catch(Exception f){
+        try {
+            executeJavascript("$(\"" + locator.replace("css=", "") + "\").select()");
+        } catch (Exception e) {
+            try {
+                executeJavascript("document.querySelector(\"" + locator.replace("css=", "") + "\").select()");
+            } catch (Exception f) {
                 info("Warning input may not be overwriten if already exists");
             }
         }
@@ -946,7 +964,7 @@ public class WebDriverWebController extends WebControllerBase implements WebCont
      */
     @Override
     public boolean isInputChecked(String locator) {
-        return (Boolean) executeJavascript("return $(\"" + locator.replace("css=","") + "\").is(':checked')");
+        return (Boolean) executeJavascript("return $(\"" + locator.replace("css=", "") + "\").is(':checked')");
     }
 
     /**
