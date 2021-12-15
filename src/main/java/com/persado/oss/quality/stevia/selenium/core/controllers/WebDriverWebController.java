@@ -278,11 +278,7 @@ public class WebDriverWebController extends WebControllerBase implements WebCont
     @Override
     public WebElement waitForElement(String locator, long waitSeconds) {
         WebDriverWait wait = new WebDriverWait(driver, waitSeconds, THREAD_SLEEP);
-        WebElement webElement = wait.until(ExpectedConditions.visibilityOfElementLocated(determineLocator(locator)));
-        if (SteviaContext.getParam("highlight") != null && SteviaContext.getParam("highlight").equals("true")) {
-            highlight(webElement);
-        }
-        return webElement;
+        return wait.until(ExpectedConditions.visibilityOfElementLocated(determineLocator(locator)));
     }
 
     /*
@@ -419,7 +415,9 @@ public class WebDriverWebController extends WebControllerBase implements WebCont
     @Override
     public void press(String locator) {
         moveToElement(locator);
-        waitForElement(locator).click();
+        WebElement element = waitForElement(locator);
+        highlight(locator);
+        element.click();
         info("The element with locator '" + locator + "' was clicked");
     }
 
@@ -632,7 +630,9 @@ public class WebDriverWebController extends WebControllerBase implements WebCont
      * java.lang.String)
      */
     public void click(String locator) {
-        waitForElement(locator).click();
+        WebElement element = waitForElement(locator);
+        highlight(locator);
+        element.click();
     }
 
     /*
@@ -1412,7 +1412,6 @@ public class WebDriverWebController extends WebControllerBase implements WebCont
     @Override
     public void pressLinkName(String linkName) {
         (new WebDriverWait(driver, SteviaContext.getWaitForElement())).until(ExpectedConditions.visibilityOfElementLocated((By.linkText(linkName)))).click();
-
     }
 
     /*
