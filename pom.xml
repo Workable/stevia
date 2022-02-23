@@ -436,9 +436,6 @@
 		</dependency>
 	</dependencies>
 
-
-
-
 	<!-- Shared version number properties -->
 	<properties>
 		<org.springframework.version>5.0.2.RELEASE</org.springframework.version>
