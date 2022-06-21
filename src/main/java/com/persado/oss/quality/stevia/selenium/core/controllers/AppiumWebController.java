@@ -42,9 +42,10 @@ import com.persado.oss.quality.stevia.selenium.core.CustomExpectedCondition;
 import com.persado.oss.quality.stevia.selenium.core.SteviaContext;
 import com.persado.oss.quality.stevia.selenium.core.WebController;
 import com.persado.oss.quality.stevia.selenium.core.controllers.commonapi.KeyInfo;
-import com.persado.oss.quality.stevia.selenium.core.controllers.webdriverapi.ByExtended;
+import com.persado.oss.quality.stevia.selenium.core.controllers.webdriverapi.BySizzle;
 import io.appium.java_client.AppiumDriver;
 import io.appium.java_client.MobileBy;
+import io.appium.java_client.PerformsTouchActions;
 import io.appium.java_client.TouchAction;
 import io.appium.java_client.touch.TapOptions;
 import io.appium.java_client.touch.WaitOptions;
@@ -255,7 +256,7 @@ public class AppiumWebController extends WebControllerBase implements WebControl
         } else if (locator.startsWith("//")) {
             return MobileBy.xpath(locator);
         } else if (locator.startsWith(CSS)) {
-            return ByExtended.cssSelector(findLocatorSubstring(locator));
+            return BySizzle.css(findLocatorSubstring(locator));
         } else if (locator.startsWith(NAME)) {
             return MobileBy.name(findLocatorSubstring(locator));
         } else if (locator.startsWith(LINK)) {
@@ -298,7 +299,7 @@ public class AppiumWebController extends WebControllerBase implements WebControl
      */
     @Override
     public WebElement waitForElement(String locator, long waitSeconds) {
-        WebDriverWait wait = new WebDriverWait(driver, waitSeconds, THREAD_SLEEP);
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(waitSeconds), Duration.ofMillis(THREAD_SLEEP));
         return wait.until(ExpectedConditions.visibilityOfElementLocated(determineLocator(locator)));
     }
 
@@ -321,7 +322,7 @@ public class AppiumWebController extends WebControllerBase implements WebControl
      */
     @Override
     public void waitForElementInvisibility(String locator, long waitSeconds) {
-        WebDriverWait wait = new WebDriverWait(driver, waitSeconds);
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(waitSeconds));
         wait.until(ExpectedConditions.invisibilityOfElementLocated(determineLocator(locator)));
 
     }
@@ -345,20 +346,20 @@ public class AppiumWebController extends WebControllerBase implements WebControl
      */
 
     public WebElement waitForElementPresence(String locator, long waitSeconds) {
-        WebDriverWait wait = new WebDriverWait(driver, waitSeconds, THREAD_SLEEP);
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(waitSeconds), Duration.ofMillis(THREAD_SLEEP));
         return wait.until(ExpectedConditions.presenceOfElementLocated(determineLocator(locator)));
     }
 
     @Override
     public void waitForElementToStopMoving(String locator, long waitSeconds) {
-        WebDriverWait wait = new WebDriverWait(driver, waitSeconds);
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(waitSeconds));
         WebElement element = waitForElement(locator);
         wait.until(CustomExpectedCondition.elementHasStoppedMoving(element));
     }
 
     @Override
     public void waitForElementToBeClickable(String locator, long waitSeconds) {
-        WebDriverWait wait = new WebDriverWait(driver, waitSeconds);
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(waitSeconds));
         wait.until(ExpectedConditions.elementToBeClickable(determineLocator(locator)));
     }
 
@@ -376,7 +377,7 @@ public class AppiumWebController extends WebControllerBase implements WebControl
      */
     @Override
     public List<WebElement> findElements(String locator) {
-        WebDriverWait wait = new WebDriverWait(driver, SteviaContext.getWaitForElement(), THREAD_SLEEP);
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(SteviaContext.getWaitForElement()), Duration.ofMillis(THREAD_SLEEP));
         return wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(determineLocator(locator)));
     }
 
@@ -855,7 +856,7 @@ public class AppiumWebController extends WebControllerBase implements WebControl
 
     @Override
     public boolean isAlertPresent(long seconds) {
-        WebDriverWait wait = new WebDriverWait(driver, seconds);
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(seconds));
         try {
             wait.until(ExpectedConditions.alertIsPresent());
             return true;
@@ -964,7 +965,7 @@ public class AppiumWebController extends WebControllerBase implements WebControl
     @Override
     public boolean isComponentPresent(String locator, long seconds) {
         try {
-            WebDriverWait wait = new WebDriverWait(driver, seconds);
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(seconds));
             wait.until(ExpectedConditions.presenceOfElementLocated(determineLocator(locator)));
             return true;
         } catch (Exception e) {
@@ -1004,7 +1005,7 @@ public class AppiumWebController extends WebControllerBase implements WebControl
     @Override
     public boolean isComponentVisible(String locator, long seconds) {
         try {
-            WebDriverWait wait = new WebDriverWait(driver, seconds);
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(seconds));
             wait.until(ExpectedConditions.visibilityOfElementLocated(determineLocator(locator)));
             return true;
         } catch (TimeoutException e) {
@@ -1033,7 +1034,7 @@ public class AppiumWebController extends WebControllerBase implements WebControl
     @Override
     public boolean isComponentNotVisible(String locator, long seconds) {
         try {
-            WebDriverWait wait = new WebDriverWait(driver, seconds);
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(seconds));
             wait.until(ExpectedConditions.invisibilityOfElementLocated(determineLocator(locator)));
             return true;
         } catch (TimeoutException e) {
@@ -1070,7 +1071,7 @@ public class AppiumWebController extends WebControllerBase implements WebControl
      * @return the alert
      */
     public Alert waitForAlert() {
-        WebDriverWait wait = new WebDriverWait(driver, SteviaContext.getWaitForElement());
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(SteviaContext.getWaitForElement()));
         return wait.until(ExpectedConditions.alertIsPresent());
     }
 
@@ -1386,7 +1387,7 @@ public class AppiumWebController extends WebControllerBase implements WebControl
      */
     @Override
     public void pressLinkName(String linkName) {
-        (new WebDriverWait(driver, SteviaContext.getWaitForElement())).until(ExpectedConditions.visibilityOfElementLocated((By.linkText(linkName)))).click();
+        (new WebDriverWait(driver, Duration.ofSeconds(SteviaContext.getWaitForElement()))).until(ExpectedConditions.visibilityOfElementLocated((By.linkText(linkName)))).click();
 
     }
 
@@ -1743,7 +1744,7 @@ public class AppiumWebController extends WebControllerBase implements WebControl
                         return ((JavascriptExecutor) driver).executeScript("return document.readyState").equals("complete");
                     }
                 };
-        new WebDriverWait(driver, waitSeconds).until(pageLoadCondition);
+        new WebDriverWait(driver, Duration.ofSeconds(waitSeconds)).until(pageLoadCondition);
     }
 
     @Override
@@ -1850,17 +1851,17 @@ public class AppiumWebController extends WebControllerBase implements WebControl
 
     @Override
     public void tap(String locator) {
-        new TouchAction(driver).tap(TapOptions.tapOptions().withElement(ElementOption.element(waitForElement(locator)))).perform();
+        new TouchAction((PerformsTouchActions) driver).tap(TapOptions.tapOptions().withElement(ElementOption.element(waitForElement(locator)))).perform();
     }
 
     @Override
     public void tap(int x, int y) {
-        new TouchAction(driver).tap(TapOptions.tapOptions().withPosition(PointOption.point(x, y))).perform();
+        new TouchAction((PerformsTouchActions) driver).tap(TapOptions.tapOptions().withPosition(PointOption.point(x, y))).perform();
     }
 
     @Override
     public void tap(WebElement el) {
-        new TouchAction(driver).tap(TapOptions.tapOptions().withElement(ElementOption.element(el))).perform();
+        new TouchAction((PerformsTouchActions) driver).tap(TapOptions.tapOptions().withElement(ElementOption.element(el))).perform();
     }
 
     @Override
@@ -1889,12 +1890,12 @@ public class AppiumWebController extends WebControllerBase implements WebControl
 
     @Override
     public void swipe(int startX, int startY, int endX, int endY) {
-        new TouchAction(driver).press(PointOption.point(startX, startY)).moveTo(PointOption.point(endX, endY)).release().perform();
+        new TouchAction((PerformsTouchActions) driver).press(PointOption.point(startX, startY)).moveTo(PointOption.point(endX, endY)).release().perform();
     }
 
     @Override
     public void swipe(int startX, int startY, int endX, int endY, int duration) {
-        new TouchAction(driver).press(PointOption.point(startX, startY)).waitAction(WaitOptions.waitOptions(Duration.ofMillis(duration))).moveTo(PointOption.point(endX, endY)).release().perform();
+        new TouchAction((PerformsTouchActions) driver).press(PointOption.point(startX, startY)).waitAction(WaitOptions.waitOptions(Duration.ofMillis(duration))).moveTo(PointOption.point(endX, endY)).release().perform();
     }
 
     @Override
