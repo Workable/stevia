@@ -422,12 +422,6 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!-- https://mvnrepository.com/artifact/com.applitools/eyes-selenium-java3 -->
-		<dependency>
-			<groupId>com.applitools</groupId>
-			<artifactId>eyes-selenium-java3</artifactId>
-			<version>3.212.0</version>
-		</dependency>
 
 		<dependency>
 			<groupId>org.fusesource.mqtt-client</groupId>

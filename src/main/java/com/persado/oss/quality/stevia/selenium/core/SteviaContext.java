@@ -7,21 +7,21 @@ package com.persado.oss.quality.stevia.selenium.core;
  * Copyright (C) 2013 - 2014 Persado
  * %%
  * Copyright (c) Persado Intellectual Property Limited. All rights reserved.
- *  
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- *  
+ *
  * * Redistributions of source code must retain the above copyright notice, this
  * list of conditions and the following disclaimer.
- *  
+ *
  * * Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
  * and/or other materials provided with the distribution.
- *  
+ *
  * * Neither the name of the Persado Intellectual Property Limited nor the names
  * of its contributors may be used to endorse or promote products derived from
  * this software without specific prior written permission.
- *  
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -36,8 +36,6 @@ package com.persado.oss.quality.stevia.selenium.core;
  * #L%
  */
 
-import com.applitools.eyes.selenium.Eyes;
-import com.applitools.eyes.visualgrid.services.VisualGridRunner;
 import com.persado.oss.quality.stevia.annotations.AnnotationsHelper;
 import com.persado.oss.quality.stevia.selenium.core.controllers.WebDriverWebController;
 import com.persado.oss.quality.stevia.testng.Verify;
@@ -107,7 +105,6 @@ public class SteviaContext {
 
         private String testClassName;
         private String testMethodName;
-        private Eyes eyes;
 
         /**
          * Clear context.
@@ -130,7 +127,6 @@ public class SteviaContext {
             capabilities = null;
             context = null;
             state = null;
-            eyes = null;
             LOG.info("Context closed, controller shutdown");
         }
 
@@ -204,20 +200,6 @@ public class SteviaContext {
 
         public void setTestMethodName(String testMethodName) {
             this.testMethodName = testMethodName;
-        }
-
-        public Eyes getEyes() {
-            return eyes;
-        }
-
-        public void setEyes(Eyes eyes) {
-            this.eyes = eyes;
-        }
-
-        public VisualGridRunner getVisualGridRunner() throws NoSuchFieldException, IllegalAccessException {
-            java.lang.reflect.Field runner = Eyes.class.getDeclaredField("runner");
-            runner.setAccessible(true);
-            return (VisualGridRunner) runner.get(eyes);
         }
     }
 
@@ -438,18 +420,6 @@ public class SteviaContext {
 
     public static void setTestMethodName(String testMethodName) {
         innerContext.get().setTestMethodName(testMethodName);
-    }
-
-    public static Eyes getEyes() {
-        return innerContext.get().getEyes();
-    }
-
-    public static void setEyes(Eyes eyes) {
-        innerContext.get().setEyes(eyes);
-    }
-
-    public static VisualGridRunner getVisualGridRunner() throws NoSuchFieldException, IllegalAccessException {
-        return innerContext.get().getVisualGridRunner();
     }
 
 }
