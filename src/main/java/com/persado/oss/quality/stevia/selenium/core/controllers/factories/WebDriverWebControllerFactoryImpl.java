@@ -52,15 +52,17 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.remote.Augmenter;
 import org.openqa.selenium.remote.LocalFileDetector;
 import org.openqa.selenium.remote.RemoteWebDriver;
+import org.openqa.selenium.remote.http.ClientConfig;
 import org.springframework.context.ApplicationContext;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.Duration;
 import java.util.concurrent.*;
 
 public class WebDriverWebControllerFactoryImpl implements WebControllerFactory {
     private static int remoteWebDriverRetry = 0;
-    private static final int MAX_RETRIES_REMOTE_WEB_DRIVER = 10;
+    private static final int MAX_RETRIES_REMOTE_WEB_DRIVER = 1;
     private static final int RETRY_DELAY_REMOTE_WEB_DRIVER = 3000;
 
     @Override
@@ -109,7 +111,8 @@ public class WebDriverWebControllerFactoryImpl implements WebControllerFactory {
             if (remoteWebDriverRetry > 1) {
                 SteviaLogger.info("Retrying getting remoteWebDriver: Attempt " + remoteWebDriverRetry);
             }
-            driver = augmenter.augment(new RemoteWebDriver(new URL(rcUrl), desiredCapabilities));
+            ClientConfig config = ClientConfig.defaultConfig().readTimeout(Duration.ofMinutes(10));
+            driver = RemoteWebDriver.builder().address(new URL(rcUrl)).oneOf(desiredCapabilities).config(config).build();
         } catch (MalformedURLException e) {
             SteviaLogger.error("Exception on getting remoteWebDriver: " + e.getMessage());
             throw new IllegalArgumentException(e.getMessage(), e);
