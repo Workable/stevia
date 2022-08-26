@@ -61,9 +61,6 @@ import java.time.Duration;
 import java.util.concurrent.*;
 
 public class WebDriverWebControllerFactoryImpl implements WebControllerFactory {
-    private static int remoteWebDriverRetry = 0;
-    private static final int MAX_RETRIES_REMOTE_WEB_DRIVER = 1;
-    private static final int RETRY_DELAY_REMOTE_WEB_DRIVER = 3000;
 
     @Override
     public WebController initialize(ApplicationContext context, WebController controller) throws InterruptedException, ExecutionException, TimeoutException {
@@ -83,8 +80,7 @@ public class WebDriverWebControllerFactoryImpl implements WebControllerFactory {
             final String wdHost = SteviaContext.getParam("rcUrl");
             ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
             ScheduledExecutor executor = new ScheduledExecutorServiceAdapter(executorService);
-            CompletableFuture<WebDriver> wd = FutureUtils.retryWithDelay(() -> CompletableFuture.supplyAsync(() -> getRemoteWebDriver(wdHost, capabilities)), MAX_RETRIES_REMOTE_WEB_DRIVER, Time.milliseconds(RETRY_DELAY_REMOTE_WEB_DRIVER), executor);
-            driver = wd.get(Integer.parseInt(SteviaContext.getParam("nodeTimeout")), TimeUnit.MINUTES);
+            driver = getRemoteWebDriver(wdHost, capabilities);
             executorService.shutdown();
             ((RemoteWebDriver) driver).setFileDetector(new LocalFileDetector());
         } else {
@@ -108,19 +104,14 @@ public class WebDriverWebControllerFactoryImpl implements WebControllerFactory {
         WebDriver driver;
         Augmenter augmenter = new Augmenter(); // adds screenshot capability to a default webdriver.
         try {
-            if (remoteWebDriverRetry > 1) {
-                SteviaLogger.info("Retrying getting remoteWebDriver: Attempt " + remoteWebDriverRetry);
-            }
-            ClientConfig config = ClientConfig.defaultConfig().readTimeout(Duration.ofMinutes(10));
-            driver = RemoteWebDriver.builder().address(new URL(rcUrl)).oneOf(desiredCapabilities).config(config).build();
+            ClientConfig config = ClientConfig.defaultConfig().readTimeout(Duration.ofMinutes(Integer.parseInt(SteviaContext.getParam("nodeTimeout")))).withRetries();
+            driver = augmenter.augment(RemoteWebDriver.builder().address(new URL(rcUrl)).oneOf(desiredCapabilities).config(config).build());
         } catch (MalformedURLException e) {
             SteviaLogger.error("Exception on getting remoteWebDriver: " + e.getMessage());
             throw new IllegalArgumentException(e.getMessage(), e);
         } catch (Exception e) {
             SteviaLogger.error("Exception on getting remoteWebDriver: " + e.getMessage());
             throw e;
-        } finally {
-            remoteWebDriverRetry++;
         }
         return driver;
     }
