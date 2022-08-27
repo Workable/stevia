@@ -41,6 +41,7 @@ import com.persado.oss.quality.stevia.selenium.core.WebController;
 import com.persado.oss.quality.stevia.selenium.core.controllers.SteviaWebControllerFactory;
 import com.persado.oss.quality.stevia.selenium.core.controllers.WebDriverWebController;
 import com.persado.oss.quality.stevia.selenium.loggers.SteviaLogger;
+import io.opentelemetry.api.OpenTelemetry;
 import org.apache.flink.api.common.time.Time;
 import org.apache.flink.runtime.concurrent.FutureUtils;
 import org.apache.flink.runtime.concurrent.ScheduledExecutor;
@@ -48,16 +49,19 @@ import org.apache.flink.runtime.concurrent.ScheduledExecutorServiceAdapter;
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.remote.Augmenter;
-import org.openqa.selenium.remote.LocalFileDetector;
-import org.openqa.selenium.remote.RemoteWebDriver;
+import org.openqa.selenium.remote.*;
 import org.openqa.selenium.remote.http.ClientConfig;
+import org.openqa.selenium.remote.tracing.TracedHttpClient;
+import org.openqa.selenium.remote.tracing.Tracer;
+import org.openqa.selenium.remote.tracing.opentelemetry.OpenTelemetryTracer;
 import org.springframework.context.ApplicationContext;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.concurrent.*;
 
 public class WebDriverWebControllerFactoryImpl implements WebControllerFactory {
@@ -102,10 +106,12 @@ public class WebDriverWebControllerFactoryImpl implements WebControllerFactory {
 
     private WebDriver getRemoteWebDriver(String rcUrl, Capabilities desiredCapabilities) {
         WebDriver driver;
-        Augmenter augmenter = new Augmenter(); // adds screenshot capability to a default webdriver.
         try {
-            ClientConfig config = ClientConfig.defaultConfig().readTimeout(Duration.ofMinutes(Integer.parseInt(SteviaContext.getParam("nodeTimeout")))).withRetries();
-            driver = augmenter.augment(RemoteWebDriver.builder().address(new URL(rcUrl)).oneOf(desiredCapabilities).config(config).build());
+            ClientConfig config = ClientConfig.defaultConfig().baseUrl(new URL(rcUrl)).readTimeout(Duration.ofMinutes(Integer.parseInt(SteviaContext.getParam("nodeTimeout")))).withRetries();
+            Tracer tracer = OpenTelemetryTracer.getInstance();
+            CommandExecutor executor = new HttpCommandExecutor(Collections.emptyMap(), config, new TracedHttpClient.Factory(tracer, org.openqa.selenium.remote.http.HttpClient.Factory.createDefault()));
+            CommandExecutor executorTraced =  new TracedCommandExecutor(executor, tracer);
+            driver = new RemoteWebDriver(executorTraced, desiredCapabilities);
         } catch (MalformedURLException e) {
             SteviaLogger.error("Exception on getting remoteWebDriver: " + e.getMessage());
             throw new IllegalArgumentException(e.getMessage(), e);
