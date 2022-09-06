@@ -107,7 +107,7 @@ public class WebDriverWebControllerFactoryImpl implements WebControllerFactory {
     private WebDriver getRemoteWebDriver(String rcUrl, Capabilities desiredCapabilities) {
         WebDriver driver;
         try {
-            ClientConfig config = ClientConfig.defaultConfig().baseUrl(new URL(rcUrl)).readTimeout(Duration.ofMinutes(Integer.parseInt(SteviaContext.getParam("nodeTimeout")))).withRetries();
+            ClientConfig config = ClientConfig.defaultConfig().baseUrl(new URL(rcUrl)).readTimeout(Duration.ofMinutes(Integer.parseInt(SteviaContext.getParam("nodeTimeout"))));
             Tracer tracer = OpenTelemetryTracer.getInstance();
             CommandExecutor executor = new HttpCommandExecutor(Collections.emptyMap(), config, new TracedHttpClient.Factory(tracer, org.openqa.selenium.remote.http.HttpClient.Factory.createDefault()));
             CommandExecutor executorTraced =  new TracedCommandExecutor(executor, tracer);
