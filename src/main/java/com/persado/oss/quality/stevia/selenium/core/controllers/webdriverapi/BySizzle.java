@@ -38,8 +38,6 @@ package com.persado.oss.quality.stevia.selenium.core.controllers.webdriverapi;
 
 
 import com.persado.oss.quality.stevia.selenium.core.SteviaContext;
-import com.persado.oss.quality.stevia.selenium.core.WebController;
-import com.persado.oss.quality.stevia.selenium.core.controllers.AppiumWebController;
 import com.persado.oss.quality.stevia.selenium.core.controllers.WebDriverWebController;
 import org.openqa.selenium.*;
 import org.openqa.selenium.remote.RemoteWebElement;
@@ -50,7 +48,6 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
-import java.util.regex.Pattern;
 
 public abstract class BySizzle extends By {
 
@@ -61,6 +58,7 @@ public abstract class BySizzle extends By {
      * browser does not implement the Selector API, a best effort is made to
      * emulate the API. In this case, we strive for at least CSS2 support, but
      * offer no guarantees.
+     *
      * @param sizzleCssSelector selector
      * @return css selector
      */
@@ -88,12 +86,20 @@ public abstract class BySizzle extends By {
 
         @Override
         public WebElement findElement(SearchContext context) {
-            return findElementBySizzleCss(context, ownSelector);
+            try {
+                return context.findElement(By.cssSelector(ownSelector));
+            } catch (InvalidSelectorException ex) {
+                return findElementBySizzleCss(context, ownSelector);
+            }
         }
 
         @Override
         public List<WebElement> findElements(SearchContext context) {
-            return findElementsBySizzleCss(context, ownSelector);
+            try {
+                return context.findElements(By.cssSelector(ownSelector));
+            } catch (InvalidSelectorException ex) {
+                return findElementsBySizzleCss(context, ownSelector);
+            }
         }
 
         @Override
@@ -107,19 +113,18 @@ public abstract class BySizzle extends By {
 
         /**
          * Find element by sizzle css, in case site does not allow to inject it , do findBy.css
-         * @param context context
          *
-         * @param cssLocator
-         *            the cssLocator
+         * @param context    context
+         * @param cssLocator the cssLocator
          * @return the web element
          */
         public WebElement findElementBySizzleCss(SearchContext context, String cssLocator) {
             List<WebElement> elements = findElementsBySizzleCss(context, cssLocator);
-            if (elements != null && elements.size() > 0 ) {
+            if (elements != null && elements.size() > 0) {
                 return elements.get(0);
             }
             // if we get here, we cannot find the element via Sizzle.
-            throw new NoSuchElementException("selector '"+cssLocator+"' cannot be found in DOM");
+            throw new NoSuchElementException("selector '" + cssLocator + "' cannot be found in DOM");
         }
 
         private void fixLocator(SearchContext context, String cssLocator,
@@ -128,13 +133,13 @@ public abstract class BySizzle extends By {
             if (element instanceof RemoteWebElement) {
                 try {
                     @SuppressWarnings("rawtypes")
-                    Class[] parameterTypes = new Class[] { SearchContext.class,
-                            String.class, String.class };
+                    Class[] parameterTypes = new Class[]{SearchContext.class,
+                            String.class, String.class};
                     Method m = element.getClass().getDeclaredMethod(
                             "setFoundBy", parameterTypes);
                     m.setAccessible(true);
-                    Object[] parameters = new Object[] { context,
-                            "css selector", cssLocator };
+                    Object[] parameters = new Object[]{context,
+                            "css selector", cssLocator};
                     m.invoke(element, parameters);
                 } catch (Exception fail) {
                     //NOOP Would like to log here?
@@ -151,7 +156,7 @@ public abstract class BySizzle extends By {
          * Find elements by sizzle css.
          *
          * @param cssLocator the cssLocator
-         *@param context context
+         * @param context    context
          * @return the list of the web elements that match this locator
          */
         public List<WebElement> findElementsBySizzleCss(SearchContext context, String cssLocator) {
@@ -165,7 +170,7 @@ public abstract class BySizzle extends By {
                         fixLocator(context, cssLocator, el);
                     }
                 }
-            }catch(RuntimeException e){//case site does not accept invoke sizzle
+            } catch (RuntimeException e) {//case site does not accept invoke sizzle
                 elements = getDriver().findElements(By.cssSelector(cssLocator));
             }
             return elements;
@@ -181,9 +186,12 @@ public abstract class BySizzle extends By {
                         .executeScript(javascriptExpression);
             } catch (WebDriverException wde) {
                 if (wde.getMessage().contains("Sizzle is not defined")) {
-                    LOG.error("Attempt to execute the code '"+javascriptExpression+"' has failed - Sizzle was not detected. Trying once more");
+                    LOG.error("Attempt to execute the code '" + javascriptExpression + "' has failed - Sizzle was not detected. Trying once more");
                     // we wait for 1/2 sec
-                    try { Thread.sleep(500); } catch (InterruptedException e) { }
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException e) {
+                    }
                     // try to inject sizzle once more.
                     injectSizzleIfNeeded();
                     // now, try again to execute
@@ -203,8 +211,7 @@ public abstract class BySizzle extends By {
         /**
          * Creates the sizzle selector expression.
          *
-         * @param cssLocator
-         *            the cssLocator
+         * @param cssLocator the cssLocator
          * @return string that represents the sizzle selector expression.
          */
         private String createSizzleSelectorExpression(String cssLocator) {
@@ -221,8 +228,8 @@ public abstract class BySizzle extends By {
                 return; // sizzle is ready
             }
 
-            for (int i = 0; i < 10; i++ ) {
-                if(sizzleLoaded() ) {
+            for (int i = 0; i < 10; i++) {
+                if (sizzleLoaded()) {
                     return; // sizzle is loaded
                 }
                 try {
@@ -231,7 +238,7 @@ public abstract class BySizzle extends By {
                     // FIX: nothing to print here
                 }
                 if (i % 10 == 0) {
-                    LOG.warn("Attempting to re-load SizzleCSS from {}",getSizzleUrl());
+                    LOG.warn("Attempting to re-load SizzleCSS from {}", getSizzleUrl());
                     injectSizzle();
                 }
             }
@@ -243,12 +250,12 @@ public abstract class BySizzle extends By {
 
 
             // sizzle is not loaded yet
-            throw new RuntimeException("Sizzle loading from ("+ getSizzleUrl() +") has failed - " +
+            throw new RuntimeException("Sizzle loading from (" + getSizzleUrl() + ") has failed - " +
                     "provide a better sizzle URL via -DsizzleUrl");
         }
 
         private String getSizzleUrl() {
-            return System.getProperty("sizzleUrl",DEFAULT_SIZZLE_URL );
+            return System.getProperty("sizzleUrl", DEFAULT_SIZZLE_URL);
         }
 
         /**
@@ -263,10 +270,10 @@ public abstract class BySizzle extends By {
                         .executeScript("return (window.Sizzle != null);");
 
             } catch (WebDriverException e) {
-                LOG.error("while trying to verify Sizzle loading, WebDriver threw exception {} {}",e.getMessage(),e.getCause() != null ? "with cause "+e.getCause() : "");
+                LOG.error("while trying to verify Sizzle loading, WebDriver threw exception {} {}", e.getMessage(), e.getCause() != null ? "with cause " + e.getCause() : "");
                 loaded = false;
             }
-            LOG.debug("Sizzle is loaded : "+loaded);
+            LOG.debug("Sizzle is loaded : " + loaded);
             return loaded;
         }
 
@@ -277,7 +284,7 @@ public abstract class BySizzle extends By {
             String sizzleUrl = getSizzleUrl();
             if (sizzleUrl.startsWith(HTTP)) {
                 sizzleUrl = sizzleUrl.substring(HTTP.length());
-            } else if  (sizzleUrl.startsWith(HTTPS)) {
+            } else if (sizzleUrl.startsWith(HTTPS)) {
                 sizzleUrl = sizzleUrl.substring(HTTPS.length());
             }
 
@@ -292,7 +299,7 @@ public abstract class BySizzle extends By {
                     .append("	 $.getScript(document.location.protocol + '//").append(sizzleUrl).append("');")
                     .append("}");
             final String stringified = script.toString();
-            LOG.debug("Executing injection script: {}",stringified);
+            LOG.debug("Executing injection script: {}", stringified);
             ((JavascriptExecutor) getDriver()).executeScript(stringified);
         }
         /**
