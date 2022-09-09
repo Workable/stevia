@@ -156,6 +156,7 @@ public class AppiumWebController extends WebControllerBase implements WebControl
      *
      * @return the driver
      */
+    @Override
     public AppiumDriver getDriver() {
         return driver;
     }

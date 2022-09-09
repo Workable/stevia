@@ -147,11 +147,6 @@ public abstract class BySizzle extends By {
             }
         }
 
-        private WebDriver getDriver() {
-            WebDriverWebController controller = ((WebDriverWebController) SteviaContext.getWebController());
-            return controller.getDriver();
-        }
-
         /**
          * Find elements by sizzle css.
          *
@@ -171,7 +166,7 @@ public abstract class BySizzle extends By {
                     }
                 }
             } catch (RuntimeException e) {//case site does not accept invoke sizzle
-                elements = getDriver().findElements(By.cssSelector(cssLocator));
+                elements = SteviaContext.getWebDriver(WebDriverWebController.class).findElements(By.cssSelector(cssLocator));
             }
             return elements;
         }
@@ -179,7 +174,7 @@ public abstract class BySizzle extends By {
         @SuppressWarnings("unchecked")
         private final List<WebElement> executeRemoteScript(String javascriptExpression) {
             List<WebElement> list = null;
-            JavascriptExecutor executor = (JavascriptExecutor) getDriver();
+            JavascriptExecutor executor = (JavascriptExecutor) SteviaContext.getWebDriver(WebDriverWebController.class);
 
             try {
                 list = (List<WebElement>) executor
@@ -221,7 +216,7 @@ public abstract class BySizzle extends By {
         /**
          * Inject sizzle if needed.
          */
-        private void injectSizzleIfNeeded() {
+        public static void injectSizzleIfNeeded() {
             if (!sizzleLoaded()) {
                 injectSizzle();
             } else {
@@ -254,7 +249,7 @@ public abstract class BySizzle extends By {
                     "provide a better sizzle URL via -DsizzleUrl");
         }
 
-        private String getSizzleUrl() {
+        private static String getSizzleUrl() {
             return System.getProperty("sizzleUrl", DEFAULT_SIZZLE_URL);
         }
 
@@ -263,10 +258,10 @@ public abstract class BySizzle extends By {
          *
          * @return the true if Sizzle is loaded in the web page
          */
-        public Boolean sizzleLoaded() {
+        public static Boolean sizzleLoaded() {
             Boolean loaded = true;
             try {
-                loaded = (Boolean) ((JavascriptExecutor) getDriver())
+                loaded = (Boolean) ((JavascriptExecutor) SteviaContext.getWebDriver(WebDriverWebController.class))
                         .executeScript("return (window.Sizzle != null);");
 
             } catch (WebDriverException e) {
@@ -280,7 +275,7 @@ public abstract class BySizzle extends By {
         /**
          * Inject sizzle 1.8.2
          */
-        public void injectSizzle() {
+        public static void injectSizzle() {
             String sizzleUrl = getSizzleUrl();
             if (sizzleUrl.startsWith(HTTP)) {
                 sizzleUrl = sizzleUrl.substring(HTTP.length());
@@ -300,7 +295,7 @@ public abstract class BySizzle extends By {
                     .append("}");
             final String stringified = script.toString();
             LOG.debug("Executing injection script: {}", stringified);
-            ((JavascriptExecutor) getDriver()).executeScript(stringified);
+            ((JavascriptExecutor) SteviaContext.getWebDriver(WebDriverWebController.class)).executeScript(stringified);
         }
         /**
          * ******************** SIZZLE SUPPORT CODE
