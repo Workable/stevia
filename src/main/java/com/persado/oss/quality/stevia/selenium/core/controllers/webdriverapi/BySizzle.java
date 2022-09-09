@@ -158,6 +158,9 @@ public abstract class BySizzle extends By {
             List<WebElement> elements;
             try {
                 injectSizzleIfNeeded();
+                if (context instanceof WebElement) {
+                    cssLocator = extractCssSelector(context) + " " + cssLocator;
+                }
                 String javascriptExpression = createSizzleSelectorExpression(cssLocator);
                 elements = executeRemoteScript(javascriptExpression);
                 if (elements.size() > 0) {
@@ -169,6 +172,11 @@ public abstract class BySizzle extends By {
                 elements = SteviaContext.getWebDriver(WebDriverWebController.class).findElements(By.cssSelector(cssLocator));
             }
             return elements;
+        }
+
+        private static String extractCssSelector(SearchContext context) {
+            String value = context.toString().split("selector:")[1];
+            return value.substring(0, value.length() - 1);
         }
 
         @SuppressWarnings("unchecked")
