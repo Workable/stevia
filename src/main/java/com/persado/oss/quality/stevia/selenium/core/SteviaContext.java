@@ -7,21 +7,21 @@ package com.persado.oss.quality.stevia.selenium.core;
  * Copyright (C) 2013 - 2014 Persado
  * %%
  * Copyright (c) Persado Intellectual Property Limited. All rights reserved.
- *  
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- *  
+ *
  * * Redistributions of source code must retain the above copyright notice, this
  * list of conditions and the following disclaimer.
- *  
+ *
  * * Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
  * and/or other materials provided with the distribution.
- *  
+ *
  * * Neither the name of the Persado Intellectual Property Limited nor the names
  * of its contributors may be used to endorse or promote products derived from
  * this software without specific prior written permission.
- *  
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -43,7 +43,6 @@ import com.persado.oss.quality.stevia.testng.Verify;
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
-import org.openqa.selenium.remote.DesiredCapabilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -256,12 +255,7 @@ public class SteviaContext {
     }
 
     public static void registerCapabilities(Capabilities caps) {
-        Capabilities capabilities = innerContext.get().capabilities;
-
-        if (capabilities == null) {
-            innerContext.get().capabilities = new DesiredCapabilities();
-        }
-        innerContext.get().capabilities.merge(caps);
+        innerContext.get().capabilities = caps;
         LOG.warn("Thread {} just registered", new Object[]{Thread.currentThread().getName()});
     }
 
@@ -324,10 +318,7 @@ public class SteviaContext {
             context.isWebDriver = false;
         }
 
-        Thread.currentThread().setName(
-                "Stevia [" + (context.isWebDriver ? "WD" : "RC") + " "
-                        + instance.getClass().getSimpleName() + "@"
-                        + Integer.toHexString(threadSeq.incrementAndGet()) + "]");
+        Thread.currentThread().setName("Stevia [" + (context.isWebDriver ? "WD" : "RC") + " " + instance.getClass().getSimpleName() + "@" + Integer.toHexString(threadSeq.incrementAndGet()) + "]");
         LOG.info("Context ready, controller is now set, type is {}", context.isWebDriver ? "WebDriver" : "SeleniumRC");
 
     }

@@ -41,9 +41,6 @@ import com.persado.oss.quality.stevia.selenium.core.WebController;
 import com.persado.oss.quality.stevia.selenium.core.controllers.SteviaWebControllerFactory;
 import com.persado.oss.quality.stevia.selenium.core.controllers.WebDriverWebController;
 import com.persado.oss.quality.stevia.selenium.loggers.SteviaLogger;
-import io.opentelemetry.api.OpenTelemetry;
-import org.apache.flink.api.common.time.Time;
-import org.apache.flink.runtime.concurrent.FutureUtils;
 import org.apache.flink.runtime.concurrent.ScheduledExecutor;
 import org.apache.flink.runtime.concurrent.ScheduledExecutorServiceAdapter;
 import org.openqa.selenium.Capabilities;
@@ -51,6 +48,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.remote.*;
 import org.openqa.selenium.remote.http.ClientConfig;
 import org.openqa.selenium.remote.tracing.TracedHttpClient;
@@ -62,7 +60,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Duration;
 import java.util.Collections;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeoutException;
 
 public class WebDriverWebControllerFactoryImpl implements WebControllerFactory {
 
@@ -127,10 +128,10 @@ public class WebDriverWebControllerFactoryImpl implements WebControllerFactory {
         String browser = capabilities.getBrowserName();
         switch (browser) {
             case "chrome":
-                driver = new ChromeDriver(capabilities);
+                driver = new ChromeDriver((ChromeOptions) capabilities);
                 break;
             case "firefox":
-                driver = new FirefoxDriver(capabilities);
+                driver = new FirefoxDriver((FirefoxOptions) capabilities);
                 break;
             default:
                 throw new IllegalStateException("Browser requested is invalid");
