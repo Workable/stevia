@@ -71,7 +71,7 @@ public final class SteviaWebControllerFactory implements Constants {
         return controller;
     }
 
-    public static WebController getWebController(ApplicationContext context, Class<? extends WebController> requestedControllerClass) throws InterruptedException, ExecutionException, TimeoutException {
+    public static WebController getWebController(ApplicationContext context, Class<? extends WebController> requestedControllerClass) throws InterruptedException, ExecutionException, TimeoutException, MalformedURLException {
         WebController controller = context.getBean(requestedControllerClass);
         String[] namesForType = context.getBeanNamesForType(requestedControllerClass);
         Assert.isTrue(namesForType.length == 1,

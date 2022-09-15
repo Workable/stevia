@@ -44,6 +44,7 @@ import com.persado.oss.quality.stevia.selenium.loggers.SteviaLogger;
 import org.apache.flink.runtime.concurrent.ScheduledExecutor;
 import org.apache.flink.runtime.concurrent.ScheduledExecutorServiceAdapter;
 import org.openqa.selenium.Capabilities;
+import org.openqa.selenium.SessionNotCreatedException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -68,7 +69,7 @@ import java.util.concurrent.TimeoutException;
 public class WebDriverWebControllerFactoryImpl implements WebControllerFactory {
 
     @Override
-    public WebController initialize(ApplicationContext context, WebController controller) throws InterruptedException, ExecutionException, TimeoutException {
+    public WebController initialize(ApplicationContext context, WebController controller) throws InterruptedException, ExecutionException, TimeoutException, MalformedURLException {
         WebDriverWebController wdController = (WebDriverWebController) controller;
         WebDriver driver = null;
         /**
@@ -105,18 +106,24 @@ public class WebDriverWebControllerFactoryImpl implements WebControllerFactory {
         return "webDriverController";
     }
 
-    private WebDriver getRemoteWebDriver(String rcUrl, Capabilities desiredCapabilities) {
-        WebDriver driver;
+    private WebDriver getRemoteWebDriver(String rcUrl, Capabilities desiredCapabilities) throws MalformedURLException {
+        WebDriver driver = null;
+        ClientConfig config = ClientConfig.defaultConfig().baseUrl(new URL(rcUrl)).readTimeout(Duration.ofMinutes(Integer.parseInt(SteviaContext.getParam("nodeTimeout")))).withRetries();
+        Tracer tracer = OpenTelemetryTracer.getInstance();
+        CommandExecutor executor = new HttpCommandExecutor(Collections.emptyMap(), config, new TracedHttpClient.Factory(tracer, org.openqa.selenium.remote.http.HttpClient.Factory.createDefault()));
+        CommandExecutor executorTraced = new TracedCommandExecutor(executor, tracer);
         try {
-            ClientConfig config = ClientConfig.defaultConfig().baseUrl(new URL(rcUrl)).readTimeout(Duration.ofMinutes(Integer.parseInt(SteviaContext.getParam("nodeTimeout")))).withRetries();
-            Tracer tracer = OpenTelemetryTracer.getInstance();
-            CommandExecutor executor = new HttpCommandExecutor(Collections.emptyMap(), config, new TracedHttpClient.Factory(tracer, org.openqa.selenium.remote.http.HttpClient.Factory.createDefault()));
-            CommandExecutor executorTraced =  new TracedCommandExecutor(executor, tracer);
             driver = new RemoteWebDriver(executorTraced, desiredCapabilities);
-        } catch (MalformedURLException e) {
-            SteviaLogger.error("Exception on getting remoteWebDriver: " + e.getMessage());
-            throw new IllegalArgumentException(e.getMessage(), e);
-        } catch (Exception e) {
+        } catch (SessionNotCreatedException e) {
+            if (e.getMessage().contains("Response code 500")) {
+                SteviaLogger.warn("Retry on getting remoteWebDriver");
+                driver = new RemoteWebDriver(executorTraced, desiredCapabilities);
+            } else {
+                SteviaLogger.error("Exception on getting remoteWebDriver: " + e.getMessage());
+                throw e;
+            }
+        } catch (
+                Exception e) {
             SteviaLogger.error("Exception on getting remoteWebDriver: " + e.getMessage());
             throw e;
         }

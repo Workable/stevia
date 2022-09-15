@@ -36,10 +36,10 @@ package com.persado.oss.quality.stevia.selenium.core.controllers.factories;
  * #L%
  */
 
+import com.persado.oss.quality.stevia.selenium.core.WebController;
 import org.springframework.context.ApplicationContext;
 
-import com.persado.oss.quality.stevia.selenium.core.WebController;
-
+import java.net.MalformedURLException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
@@ -53,7 +53,7 @@ public interface WebControllerFactory {
 	 * @param controller
 	 * @return the returned bean is the provided, augmented with additional functionality
 	 */
-	 WebController initialize(ApplicationContext context, WebController controller) throws InterruptedException, ExecutionException, TimeoutException;
+	 WebController initialize(ApplicationContext context, WebController controller) throws InterruptedException, ExecutionException, TimeoutException, MalformedURLException;
 	
 	/**
 	 * returns the name of bean as registered in the @id attribute in the stevia context <bean .../> construct.
