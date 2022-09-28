@@ -410,7 +410,7 @@ public class WebDriverWebController extends WebControllerBase implements WebCont
     public void press(String locator) {
         moveToElement(locator);
         WebElement element = waitForElement(locator);
-        highlight(locator);
+        highlight(element);
         element.click();
         info("The element with locator '" + locator + "' was clicked");
     }
@@ -625,7 +625,7 @@ public class WebDriverWebController extends WebControllerBase implements WebCont
      */
     public void click(String locator) {
         WebElement element = waitForElement(locator);
-        highlight(locator);
+        highlight(element);
         element.click();
     }
 
