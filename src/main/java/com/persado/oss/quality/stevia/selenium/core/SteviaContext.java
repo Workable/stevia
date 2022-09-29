@@ -227,8 +227,12 @@ public class SteviaContext {
         return innerContext.get().controller;
     }
 
+    public static <T extends WebControllerBase> WebController getWebController(Class<T> classType) {
+        return classType.cast(getWebController());
+    }
+
     public static <T extends WebControllerBase> WebDriver getWebDriver(Class<T> classType) {
-        return classType.cast(getWebController()).getDriver();
+        return getWebController(classType).getDriver();
     }
 
     /**
