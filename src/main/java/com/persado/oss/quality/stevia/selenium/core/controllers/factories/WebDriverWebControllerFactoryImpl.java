@@ -50,13 +50,18 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
-import org.openqa.selenium.remote.*;
+import org.openqa.selenium.remote.CommandExecutor;
+import org.openqa.selenium.remote.HttpCommandExecutor;
+import org.openqa.selenium.remote.LocalFileDetector;
+import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.remote.http.ClientConfig;
+import org.openqa.selenium.remote.http.netty.NettyClient;
 import org.openqa.selenium.remote.tracing.TracedHttpClient;
 import org.openqa.selenium.remote.tracing.Tracer;
 import org.openqa.selenium.remote.tracing.opentelemetry.OpenTelemetryTracer;
 import org.springframework.context.ApplicationContext;
 
+import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Duration;
@@ -69,7 +74,7 @@ import java.util.concurrent.TimeoutException;
 public class WebDriverWebControllerFactoryImpl implements WebControllerFactory {
 
     @Override
-    public WebController initialize(ApplicationContext context, WebController controller) throws InterruptedException, ExecutionException, TimeoutException, MalformedURLException {
+    public WebController initialize(ApplicationContext context, WebController controller) throws InterruptedException, ExecutionException, TimeoutException, MalformedURLException, NoSuchFieldException, IllegalAccessException {
         WebDriverWebController wdController = (WebDriverWebController) controller;
         WebDriver driver = null;
         /**
@@ -106,18 +111,24 @@ public class WebDriverWebControllerFactoryImpl implements WebControllerFactory {
         return "webDriverController";
     }
 
-    private WebDriver getRemoteWebDriver(String rcUrl, Capabilities desiredCapabilities) throws MalformedURLException {
+    private WebDriver getRemoteWebDriver(String rcUrl, Capabilities desiredCapabilities) throws MalformedURLException, NoSuchFieldException, IllegalAccessException {
         WebDriver driver = null;
+        //ReadTimeout when creating the RemoteWebDriver objects
+        //needs to take into consideration the time needed for
+        /**
+         * When setting readTimeout RemoteWebDriver creation
+         * we need to take into consideration the time needed for the Grid node to be spawned
+         * Gridlastic suggests setting it to 10 minutes
+         */
         ClientConfig config = ClientConfig.defaultConfig().baseUrl(new URL(rcUrl)).readTimeout(Duration.ofMinutes(Integer.parseInt(SteviaContext.getParam("nodeTimeout")))).withRetries();
         Tracer tracer = OpenTelemetryTracer.getInstance();
         CommandExecutor executor = new HttpCommandExecutor(Collections.emptyMap(), config, new TracedHttpClient.Factory(tracer, org.openqa.selenium.remote.http.HttpClient.Factory.createDefault()));
-        CommandExecutor executorTraced = new TracedCommandExecutor(executor, tracer);
         try {
-            driver = new RemoteWebDriver(executorTraced, desiredCapabilities);
+            driver = new RemoteWebDriver(executor, desiredCapabilities);
         } catch (SessionNotCreatedException e) {
             if (e.getMessage().contains("Response code 500")) {
                 SteviaLogger.warn("Retry on getting remoteWebDriver");
-                driver = new RemoteWebDriver(executorTraced, desiredCapabilities);
+                driver = new RemoteWebDriver(executor, desiredCapabilities);
             } else {
                 SteviaLogger.error("Exception on getting remoteWebDriver: " + e.getMessage());
                 throw e;
@@ -127,6 +138,7 @@ public class WebDriverWebControllerFactoryImpl implements WebControllerFactory {
             SteviaLogger.error("Exception on getting remoteWebDriver: " + e.getMessage());
             throw e;
         }
+        setTimeout(driver);
         return driver;
     }
 
@@ -144,5 +156,31 @@ public class WebDriverWebControllerFactoryImpl implements WebControllerFactory {
                 throw new IllegalStateException("Browser requested is invalid");
         }
         return driver;
+    }
+
+    /**
+     * Set read timeout on NettyClient of WebDriver using Reflection
+     * This is needed in order to update the readTimeout private field at a later time of instatiation of RemoteWebDriver object
+     * ReadTimeout should have a reasonable value, 10 secs seems fine for socket readTimeout
+     * @param driver
+     * @throws NoSuchFieldException
+     * @throws IllegalAccessException
+     */
+    private void setTimeout(WebDriver driver) throws NoSuchFieldException, IllegalAccessException {
+        if (driver instanceof RemoteWebDriver) {
+            Field clientOfExecutor = HttpCommandExecutor.class.getDeclaredField("client");
+            Field delegatedClient = TracedHttpClient.class.getDeclaredField("delegate");
+            Field config = NettyClient.class.getDeclaredField("config");
+            Field readTimeout = ClientConfig.class.getDeclaredField("readTimeout");
+            clientOfExecutor.setAccessible(true);
+            delegatedClient.setAccessible(true);
+            config.setAccessible(true);
+            readTimeout.setAccessible(true);
+            HttpCommandExecutor executor = (HttpCommandExecutor) ((RemoteWebDriver) driver).getCommandExecutor();
+            TracedHttpClient tracedClient = (TracedHttpClient) clientOfExecutor.get(executor);
+            NettyClient client = (NettyClient) delegatedClient.get(tracedClient);
+            ClientConfig finalConfig = (ClientConfig) config.get(client);
+            readTimeout.set(finalConfig, Duration.ofSeconds(10));
+        }
     }
 }

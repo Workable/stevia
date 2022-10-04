@@ -147,7 +147,7 @@ public class AnnotationsHelper implements ApplicationContextAware {
 	 * mask existing controller with requestedControllerClass
 	 * @param requestedControllerClass
 	 */
-	private void controllerMask(Class<? extends WebController> requestedControllerClass) throws InterruptedException, ExecutionException, TimeoutException, MalformedURLException {
+	private void controllerMask(Class<? extends WebController> requestedControllerClass) throws InterruptedException, ExecutionException, TimeoutException, MalformedURLException, NoSuchFieldException, IllegalAccessException {
 		WebController currentControllerObj = SteviaContext.getWebController();
 		Class<? extends WebController> currentControllerClass = currentControllerObj.getClass();
 		String curControllerKey = currentControllerClass.getCanonicalName();

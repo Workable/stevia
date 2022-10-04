@@ -55,7 +55,7 @@ public final class SteviaWebControllerFactory implements Constants {
 
     public static final Logger LOG = LoggerFactory.getLogger(SteviaWebControllerFactory.class);
 
-    public static WebController getWebController(ApplicationContext context) throws MalformedURLException, InterruptedException, ExecutionException, TimeoutException {
+    public static WebController getWebController(ApplicationContext context) throws MalformedURLException, InterruptedException, ExecutionException, TimeoutException, NoSuchFieldException, IllegalAccessException {
         WebController controller = null;
 
         String driverType = SteviaContext.getParam(DRIVER_TYPE);
@@ -71,7 +71,7 @@ public final class SteviaWebControllerFactory implements Constants {
         return controller;
     }
 
-    public static WebController getWebController(ApplicationContext context, Class<? extends WebController> requestedControllerClass) throws InterruptedException, ExecutionException, TimeoutException, MalformedURLException {
+    public static WebController getWebController(ApplicationContext context, Class<? extends WebController> requestedControllerClass) throws InterruptedException, ExecutionException, TimeoutException, MalformedURLException, NoSuchFieldException, IllegalAccessException {
         WebController controller = context.getBean(requestedControllerClass);
         String[] namesForType = context.getBeanNamesForType(requestedControllerClass);
         Assert.isTrue(namesForType.length == 1,
