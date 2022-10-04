@@ -180,7 +180,7 @@ public class WebDriverWebControllerFactoryImpl implements WebControllerFactory {
             TracedHttpClient tracedClient = (TracedHttpClient) clientOfExecutor.get(executor);
             NettyClient client = (NettyClient) delegatedClient.get(tracedClient);
             ClientConfig finalConfig = (ClientConfig) config.get(client);
-            readTimeout.set(finalConfig, Duration.ofSeconds(10));
+            readTimeout.set(finalConfig, Duration.ofSeconds(30));
         }
     }
 }
