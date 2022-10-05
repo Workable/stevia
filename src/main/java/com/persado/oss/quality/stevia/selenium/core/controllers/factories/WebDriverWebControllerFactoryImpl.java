@@ -161,7 +161,7 @@ public class WebDriverWebControllerFactoryImpl implements WebControllerFactory {
     /**
      * Set read timeout on NettyClient of WebDriver using Reflection
      * This is needed in order to update the readTimeout private field at a later time of instatiation of RemoteWebDriver object
-     * ReadTimeout should have a reasonable value, 10 secs seems fine for socket readTimeout
+     * ReadTimeout should have a reasonable value
      * @param driver
      * @throws NoSuchFieldException
      * @throws IllegalAccessException
@@ -180,7 +180,7 @@ public class WebDriverWebControllerFactoryImpl implements WebControllerFactory {
             TracedHttpClient tracedClient = (TracedHttpClient) clientOfExecutor.get(executor);
             NettyClient client = (NettyClient) delegatedClient.get(tracedClient);
             ClientConfig finalConfig = (ClientConfig) config.get(client);
-            readTimeout.set(finalConfig, Duration.ofSeconds(30));
+            readTimeout.set(finalConfig, Duration.ofSeconds(60));
         }
     }
 }
