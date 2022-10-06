@@ -41,9 +41,6 @@ import com.persado.oss.quality.stevia.selenium.core.SteviaContext;
 import com.persado.oss.quality.stevia.selenium.core.SteviaContextSupport;
 import com.persado.oss.quality.stevia.selenium.core.WebController;
 import com.persado.oss.quality.stevia.selenium.core.controllers.SteviaWebControllerFactory;
-import com.persado.oss.quality.stevia.selenium.listeners.ConditionsListener;
-import com.persado.oss.quality.stevia.selenium.listeners.ControllerMaskingListener;
-import org.openqa.selenium.Capabilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.test.context.ContextConfiguration;
@@ -65,7 +62,6 @@ import java.util.concurrent.TimeUnit;
  * configuration parameters.
  */
 @ContextConfiguration(locations = {"classpath:META-INF/spring/stevia-boot-context.xml"})
-@Listeners({ControllerMaskingListener.class, ConditionsListener.class})
 public class SteviaTestBase extends AbstractTestNGSpringContextTests implements Constants {
 
     /**
@@ -91,7 +87,8 @@ public class SteviaTestBase extends AbstractTestNGSpringContextTests implements 
 
     /**
      * Extends the TestNG method to prepare the Spring contexts for parallel tests.
-     *     * As seen at {@link http://goo.gl/g8QT2}
+     * * As seen at {@link http://goo.gl/g8QT2}
+     *
      * @throws Exception the exception
      */
     @BeforeSuite(alwaysRun = true)

@@ -41,30 +41,40 @@ import com.persado.oss.quality.stevia.selenium.core.WebController;
 import com.persado.oss.quality.stevia.selenium.core.controllers.SteviaWebControllerFactory;
 import com.persado.oss.quality.stevia.selenium.core.controllers.WebDriverWebController;
 import com.persado.oss.quality.stevia.selenium.loggers.SteviaLogger;
-import org.apache.flink.api.common.time.Time;
-import org.apache.flink.runtime.concurrent.FutureUtils;
 import org.apache.flink.runtime.concurrent.ScheduledExecutor;
 import org.apache.flink.runtime.concurrent.ScheduledExecutorServiceAdapter;
 import org.openqa.selenium.Capabilities;
+import org.openqa.selenium.SessionNotCreatedException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.remote.Augmenter;
+import org.openqa.selenium.firefox.FirefoxOptions;
+import org.openqa.selenium.remote.CommandExecutor;
+import org.openqa.selenium.remote.HttpCommandExecutor;
 import org.openqa.selenium.remote.LocalFileDetector;
 import org.openqa.selenium.remote.RemoteWebDriver;
+import org.openqa.selenium.remote.http.ClientConfig;
+import org.openqa.selenium.remote.http.netty.NettyClient;
+import org.openqa.selenium.remote.tracing.TracedHttpClient;
+import org.openqa.selenium.remote.tracing.Tracer;
+import org.openqa.selenium.remote.tracing.opentelemetry.OpenTelemetryTracer;
 import org.springframework.context.ApplicationContext;
 
+import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.concurrent.*;
+import java.time.Duration;
+import java.util.Collections;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeoutException;
 
 public class WebDriverWebControllerFactoryImpl implements WebControllerFactory {
-    private static int remoteWebDriverRetry = 0;
-    private static final int MAX_RETRIES_REMOTE_WEB_DRIVER = 10;
-    private static final int RETRY_DELAY_REMOTE_WEB_DRIVER = 3000;
 
     @Override
-    public WebController initialize(ApplicationContext context, WebController controller) throws InterruptedException, ExecutionException, TimeoutException {
+    public WebController initialize(ApplicationContext context, WebController controller) throws InterruptedException, ExecutionException, TimeoutException, MalformedURLException, NoSuchFieldException, IllegalAccessException {
         WebDriverWebController wdController = (WebDriverWebController) controller;
         WebDriver driver = null;
         /**
@@ -81,8 +91,7 @@ public class WebDriverWebControllerFactoryImpl implements WebControllerFactory {
             final String wdHost = SteviaContext.getParam("rcUrl");
             ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
             ScheduledExecutor executor = new ScheduledExecutorServiceAdapter(executorService);
-            CompletableFuture<WebDriver> wd = FutureUtils.retryWithDelay(() -> CompletableFuture.supplyAsync(() -> getRemoteWebDriver(wdHost, capabilities)), MAX_RETRIES_REMOTE_WEB_DRIVER, Time.milliseconds(RETRY_DELAY_REMOTE_WEB_DRIVER), executor);
-            driver = wd.get(Integer.parseInt(SteviaContext.getParam("nodeTimeout")), TimeUnit.MINUTES);
+            driver = getRemoteWebDriver(wdHost, capabilities);
             executorService.shutdown();
             ((RemoteWebDriver) driver).setFileDetector(new LocalFileDetector());
         } else {
@@ -102,23 +111,32 @@ public class WebDriverWebControllerFactoryImpl implements WebControllerFactory {
         return "webDriverController";
     }
 
-    private WebDriver getRemoteWebDriver(String rcUrl, Capabilities desiredCapabilities) {
-        WebDriver driver;
-        Augmenter augmenter = new Augmenter(); // adds screenshot capability to a default webdriver.
+    private WebDriver getRemoteWebDriver(String rcUrl, Capabilities desiredCapabilities) throws MalformedURLException, NoSuchFieldException, IllegalAccessException {
+        WebDriver driver = null;
+        /**
+         * When setting readTimeout RemoteWebDriver creation
+         * we need to take into consideration the time needed for the Grid node to be spawned
+         * Gridlastic suggests setting it to 10 minutes
+         */
+        ClientConfig config = ClientConfig.defaultConfig().baseUrl(new URL(rcUrl)).readTimeout(Duration.ofMinutes(Integer.parseInt(SteviaContext.getParam("nodeTimeout")))).withRetries();
+        Tracer tracer = OpenTelemetryTracer.getInstance();
+        CommandExecutor executor = new HttpCommandExecutor(Collections.emptyMap(), config, new TracedHttpClient.Factory(tracer, org.openqa.selenium.remote.http.HttpClient.Factory.createDefault()));
         try {
-            if (remoteWebDriverRetry > 1) {
-                SteviaLogger.info("Retrying getting remoteWebDriver: Attempt " + remoteWebDriverRetry);
+            driver = new RemoteWebDriver(executor, desiredCapabilities);
+        } catch (SessionNotCreatedException e) {
+            if (e.getMessage().contains("Response code 500")) {
+                SteviaLogger.warn("Retry on getting remoteWebDriver");
+                driver = new RemoteWebDriver(executor, desiredCapabilities);
+            } else {
+                SteviaLogger.error("Exception on getting remoteWebDriver: " + e.getMessage());
+                throw e;
             }
-            driver = augmenter.augment(new RemoteWebDriver(new URL(rcUrl), desiredCapabilities));
-        } catch (MalformedURLException e) {
-            SteviaLogger.error("Exception on getting remoteWebDriver: " + e.getMessage());
-            throw new IllegalArgumentException(e.getMessage(), e);
-        } catch (Exception e) {
+        } catch (
+                Exception e) {
             SteviaLogger.error("Exception on getting remoteWebDriver: " + e.getMessage());
             throw e;
-        } finally {
-            remoteWebDriverRetry++;
         }
+        setTimeout(driver);
         return driver;
     }
 
@@ -127,14 +145,40 @@ public class WebDriverWebControllerFactoryImpl implements WebControllerFactory {
         String browser = capabilities.getBrowserName();
         switch (browser) {
             case "chrome":
-                driver = new ChromeDriver(capabilities);
+                driver = new ChromeDriver((ChromeOptions) capabilities);
                 break;
             case "firefox":
-                driver = new FirefoxDriver(capabilities);
+                driver = new FirefoxDriver((FirefoxOptions) capabilities);
                 break;
             default:
                 throw new IllegalStateException("Browser requested is invalid");
         }
         return driver;
+    }
+
+    /**
+     * Set read timeout on NettyClient of WebDriver using Reflection
+     * This is needed in order to update the readTimeout private field at a later time of instatiation of RemoteWebDriver object
+     * ReadTimeout should have a reasonable value
+     * @param driver
+     * @throws NoSuchFieldException
+     * @throws IllegalAccessException
+     */
+    private void setTimeout(WebDriver driver) throws NoSuchFieldException, IllegalAccessException {
+        if (driver instanceof RemoteWebDriver) {
+            Field clientOfExecutor = HttpCommandExecutor.class.getDeclaredField("client");
+            Field delegatedClient = TracedHttpClient.class.getDeclaredField("delegate");
+            Field config = NettyClient.class.getDeclaredField("config");
+            Field readTimeout = ClientConfig.class.getDeclaredField("readTimeout");
+            clientOfExecutor.setAccessible(true);
+            delegatedClient.setAccessible(true);
+            config.setAccessible(true);
+            readTimeout.setAccessible(true);
+            HttpCommandExecutor executor = (HttpCommandExecutor) ((RemoteWebDriver) driver).getCommandExecutor();
+            TracedHttpClient tracedClient = (TracedHttpClient) clientOfExecutor.get(executor);
+            NettyClient client = (NettyClient) delegatedClient.get(tracedClient);
+            ClientConfig finalConfig = (ClientConfig) config.get(client);
+            readTimeout.set(finalConfig, Duration.ofSeconds(60));
+        }
     }
 }

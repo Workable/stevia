@@ -41,6 +41,7 @@ import com.persado.oss.quality.stevia.selenium.core.WebController;
 import com.persado.oss.quality.stevia.selenium.core.controllers.commonapi.KeyInfo;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.Point;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.html5.LocalStorage;
 import org.openqa.selenium.interactions.Actions;
@@ -55,6 +56,11 @@ class VoidController implements WebController {
 
     @Override
     public void clearStorage() {
+    }
+
+    @Override
+    public WebDriver getDriver() {
+        return null;
     }
 
     @Override

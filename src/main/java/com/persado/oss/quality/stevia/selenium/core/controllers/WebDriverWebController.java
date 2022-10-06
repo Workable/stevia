@@ -42,7 +42,7 @@ import com.persado.oss.quality.stevia.selenium.core.CustomExpectedCondition;
 import com.persado.oss.quality.stevia.selenium.core.SteviaContext;
 import com.persado.oss.quality.stevia.selenium.core.WebController;
 import com.persado.oss.quality.stevia.selenium.core.controllers.commonapi.KeyInfo;
-import com.persado.oss.quality.stevia.selenium.core.controllers.webdriverapi.ByExtended;
+import com.persado.oss.quality.stevia.selenium.core.controllers.webdriverapi.BySizzle;
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.*;
 import org.openqa.selenium.html5.LocalStorage;
@@ -60,6 +60,7 @@ import org.springframework.util.Assert;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -77,52 +78,45 @@ public class WebDriverWebController extends WebControllerBase implements WebCont
      * The Constant LOG.
      */
     private static final Logger WEBDRIVER_LOG = LoggerFactory.getLogger(WebDriverWebController.class);
-
+    /**
+     * The Constant TO_MILLIS.
+     */
+    private static final int TO_MILLIS = 1000;
+    /**
+     * The Constant THREAD_SLEEP.
+     */
+    private static final long THREAD_SLEEP = 50;
+    /**
+     * The Constant XPATH.
+     */
+    private static final String XPATH = "xpath";
+    /**
+     * The Constant CSS.
+     */
+    private static final String CSS = "css";
+    /**
+     * The Constant NAME.
+     */
+    private static final String NAME = "name";
+    /**
+     * The Constant LINK.
+     */
+    private static final String LINK = "link";
+    /**
+     * The Constant ID.
+     */
+    private static final String ID = "id";
     /**
      * The driver.
      */
     private WebDriver driver;
 
     /**
-     * The Constant TO_MILLIS.
-     */
-    private static final int TO_MILLIS = 1000;
-
-    /**
-     * The Constant THREAD_SLEEP.
-     */
-    private static final long THREAD_SLEEP = 50;
-
-    /**
-     * The Constant XPATH.
-     */
-    private static final String XPATH = "xpath";
-
-    /**
-     * The Constant CSS.
-     */
-    private static final String CSS = "css";
-
-    /**
-     * The Constant NAME.
-     */
-    private static final String NAME = "name";
-
-    /**
-     * The Constant LINK.
-     */
-    private static final String LINK = "link";
-
-    /**
-     * The Constant ID.
-     */
-    private static final String ID = "id";
-
-    /**
      * Gets the driver.
      *
      * @return the driver
      */
+    @Override
     public WebDriver getDriver() {
         return driver;
     }
@@ -244,7 +238,7 @@ public class WebDriverWebController extends WebControllerBase implements WebCont
         } else if ((locator.startsWith("//")) || (locator.startsWith("(//"))) {
             return By.xpath(locator);
         } else if (locator.startsWith(CSS)) {
-            return ByExtended.cssSelector(findLocatorSubstring(locator));
+            return BySizzle.css(findLocatorSubstring(locator));
         } else if (locator.startsWith(NAME)) {
             return By.name(findLocatorSubstring(locator));
         } else if (locator.startsWith(LINK)) {
@@ -277,7 +271,7 @@ public class WebDriverWebController extends WebControllerBase implements WebCont
      */
     @Override
     public WebElement waitForElement(String locator, long waitSeconds) {
-        WebDriverWait wait = new WebDriverWait(driver, waitSeconds, THREAD_SLEEP);
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(waitSeconds), Duration.ofMillis(THREAD_SLEEP));
         return wait.until(ExpectedConditions.visibilityOfElementLocated(determineLocator(locator)));
     }
 
@@ -300,7 +294,7 @@ public class WebDriverWebController extends WebControllerBase implements WebCont
      */
     @Override
     public void waitForElementInvisibility(String locator, long waitSeconds) {
-        WebDriverWait wait = new WebDriverWait(driver, waitSeconds);
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(waitSeconds));
         wait.until(ExpectedConditions.invisibilityOfElementLocated(determineLocator(locator)));
     }
 
@@ -323,7 +317,7 @@ public class WebDriverWebController extends WebControllerBase implements WebCont
      */
 
     public WebElement waitForElementPresence(String locator, long waitSeconds) {
-        WebDriverWait wait = new WebDriverWait(driver, waitSeconds, THREAD_SLEEP);
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(waitSeconds), Duration.ofMillis(THREAD_SLEEP));
         return wait.until(ExpectedConditions.presenceOfElementLocated(determineLocator(locator)));
     }
 
@@ -347,7 +341,7 @@ public class WebDriverWebController extends WebControllerBase implements WebCont
      */
     @Override
     public void waitForElementToBeClickable(String locator, long waitSeconds) {
-        WebDriverWait wait = new WebDriverWait(driver, waitSeconds);
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(waitSeconds));
         wait.until(ExpectedConditions.elementToBeClickable(determineLocator(locator)));
     }
 
@@ -359,7 +353,7 @@ public class WebDriverWebController extends WebControllerBase implements WebCont
      */
     @Override
     public void waitForElementToStopMoving(String locator, long waitSeconds) {
-        WebDriverWait wait = new WebDriverWait(driver, waitSeconds);
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(waitSeconds));
         WebElement element = waitForElement(locator);
         wait.until(CustomExpectedCondition.elementHasStoppedMoving(element));
     }
@@ -374,7 +368,7 @@ public class WebDriverWebController extends WebControllerBase implements WebCont
      */
     @Override
     public List<WebElement> findElements(String locator) {
-        WebDriverWait wait = new WebDriverWait(driver, SteviaContext.getWaitForElement(), THREAD_SLEEP);
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(SteviaContext.getWaitForElement()), Duration.ofMillis(THREAD_SLEEP));
         return wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(determineLocator(locator)));
     }
 
@@ -416,7 +410,7 @@ public class WebDriverWebController extends WebControllerBase implements WebCont
     public void press(String locator) {
         moveToElement(locator);
         WebElement element = waitForElement(locator);
-        highlight(locator);
+        highlight(element);
         element.click();
         info("The element with locator '" + locator + "' was clicked");
     }
@@ -631,7 +625,7 @@ public class WebDriverWebController extends WebControllerBase implements WebCont
      */
     public void click(String locator) {
         WebElement element = waitForElement(locator);
-        highlight(locator);
+        highlight(element);
         element.click();
     }
 
@@ -880,7 +874,7 @@ public class WebDriverWebController extends WebControllerBase implements WebCont
 
     @Override
     public boolean isAlertPresent(long seconds) {
-        WebDriverWait wait = new WebDriverWait(driver, seconds);
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(seconds));
         try {
             wait.until(ExpectedConditions.alertIsPresent());
             return true;
@@ -989,7 +983,7 @@ public class WebDriverWebController extends WebControllerBase implements WebCont
     @Override
     public boolean isComponentPresent(String locator, long seconds) {
         try {
-            WebDriverWait wait = new WebDriverWait(driver, seconds);
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(seconds));
             wait.until(ExpectedConditions.presenceOfElementLocated(determineLocator(locator)));
             return true;
         } catch (Exception e) {
@@ -1029,7 +1023,7 @@ public class WebDriverWebController extends WebControllerBase implements WebCont
     @Override
     public boolean isComponentVisible(String locator, long seconds) {
         try {
-            WebDriverWait wait = new WebDriverWait(driver, seconds);
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(seconds));
             wait.until(ExpectedConditions.visibilityOfElementLocated(determineLocator(locator)));
             return true;
         } catch (TimeoutException e) {
@@ -1058,7 +1052,7 @@ public class WebDriverWebController extends WebControllerBase implements WebCont
     @Override
     public boolean isComponentNotVisible(String locator, long seconds) {
         try {
-            WebDriverWait wait = new WebDriverWait(driver, seconds);
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(seconds));
             wait.until(ExpectedConditions.invisibilityOfElementLocated(determineLocator(locator)));
             return true;
         } catch (TimeoutException e) {
@@ -1095,7 +1089,7 @@ public class WebDriverWebController extends WebControllerBase implements WebCont
      * @return the alert
      */
     public Alert waitForAlert() {
-        WebDriverWait wait = new WebDriverWait(driver, SteviaContext.getWaitForElement());
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(SteviaContext.getWaitForElement()));
         return wait.until(ExpectedConditions.alertIsPresent());
     }
 
@@ -1411,7 +1405,7 @@ public class WebDriverWebController extends WebControllerBase implements WebCont
      */
     @Override
     public void pressLinkName(String linkName) {
-        (new WebDriverWait(driver, SteviaContext.getWaitForElement())).until(ExpectedConditions.visibilityOfElementLocated((By.linkText(linkName)))).click();
+        (new WebDriverWait(driver, Duration.ofSeconds(SteviaContext.getWaitForElement()))).until(ExpectedConditions.visibilityOfElementLocated((By.linkText(linkName)))).click();
     }
 
     /*
@@ -1767,7 +1761,7 @@ public class WebDriverWebController extends WebControllerBase implements WebCont
                         return ((JavascriptExecutor) driver).executeScript("return document.readyState").equals("complete");
                     }
                 };
-        new WebDriverWait(driver, waitSeconds).until(pageLoadCondition);
+        new WebDriverWait(driver, Duration.ofSeconds(waitSeconds)).until(pageLoadCondition);
     }
 
     @Override

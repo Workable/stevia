@@ -7,21 +7,21 @@ package com.persado.oss.quality.stevia.selenium.core;
  * Copyright (C) 2013 - 2014 Persado
  * %%
  * Copyright (c) Persado Intellectual Property Limited. All rights reserved.
- *
+ *  
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- *
+ *  
  * * Redistributions of source code must retain the above copyright notice, this
  * list of conditions and the following disclaimer.
- *
+ *  
  * * Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
  * and/or other materials provided with the distribution.
- *
+ *  
  * * Neither the name of the Persado Intellectual Property Limited nor the names
  * of its contributors may be used to endorse or promote products derived from
  * this software without specific prior written permission.
- *
+ *  
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -36,14 +36,13 @@ package com.persado.oss.quality.stevia.selenium.core;
  * #L%
  */
 
-import com.applitools.eyes.selenium.Eyes;
-import com.applitools.eyes.visualgrid.services.VisualGridRunner;
 import com.persado.oss.quality.stevia.annotations.AnnotationsHelper;
+import com.persado.oss.quality.stevia.selenium.core.controllers.WebControllerBase;
 import com.persado.oss.quality.stevia.selenium.core.controllers.WebDriverWebController;
 import com.persado.oss.quality.stevia.testng.Verify;
 import org.openqa.selenium.Capabilities;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
-import org.openqa.selenium.remote.DesiredCapabilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -107,7 +106,6 @@ public class SteviaContext {
 
         private String testClassName;
         private String testMethodName;
-        private Eyes eyes;
 
         /**
          * Clear context.
@@ -130,7 +128,6 @@ public class SteviaContext {
             capabilities = null;
             context = null;
             state = null;
-            eyes = null;
             LOG.info("Context closed, controller shutdown");
         }
 
@@ -205,20 +202,6 @@ public class SteviaContext {
         public void setTestMethodName(String testMethodName) {
             this.testMethodName = testMethodName;
         }
-
-        public Eyes getEyes() {
-            return eyes;
-        }
-
-        public void setEyes(Eyes eyes) {
-            this.eyes = eyes;
-        }
-
-        public VisualGridRunner getVisualGridRunner() throws NoSuchFieldException, IllegalAccessException {
-            java.lang.reflect.Field runner = Eyes.class.getDeclaredField("runner");
-            runner.setAccessible(true);
-            return (VisualGridRunner) runner.get(eyes);
-        }
     }
 
 
@@ -244,6 +227,13 @@ public class SteviaContext {
         return innerContext.get().controller;
     }
 
+    public static <T extends WebControllerBase> WebController getWebController(Class<T> classType) {
+        return classType.cast(getWebController());
+    }
+
+    public static <T extends WebControllerBase> WebDriver getWebDriver(Class<T> classType) {
+        return getWebController(classType).getDriver();
+    }
 
     /**
      * Determines the instance of the Web Controller
@@ -269,12 +259,7 @@ public class SteviaContext {
     }
 
     public static void registerCapabilities(Capabilities caps) {
-        Capabilities capabilities = innerContext.get().capabilities;
-
-        if (capabilities == null) {
-            innerContext.get().capabilities = new DesiredCapabilities();
-        }
-        innerContext.get().capabilities.merge(caps);
+        innerContext.get().capabilities = caps;
         LOG.warn("Thread {} just registered", new Object[]{Thread.currentThread().getName()});
     }
 
@@ -337,10 +322,7 @@ public class SteviaContext {
             context.isWebDriver = false;
         }
 
-        Thread.currentThread().setName(
-                "Stevia [" + (context.isWebDriver ? "WD" : "RC") + " "
-                        + instance.getClass().getSimpleName() + "@"
-                        + Integer.toHexString(threadSeq.incrementAndGet()) + "]");
+        Thread.currentThread().setName("Stevia [" + (context.isWebDriver ? "WD" : "RC") + " " + instance.getClass().getSimpleName() + "@" + Integer.toHexString(threadSeq.incrementAndGet()) + "]");
         LOG.info("Context ready, controller is now set, type is {}", context.isWebDriver ? "WebDriver" : "SeleniumRC");
 
     }
@@ -438,18 +420,6 @@ public class SteviaContext {
 
     public static void setTestMethodName(String testMethodName) {
         innerContext.get().setTestMethodName(testMethodName);
-    }
-
-    public static Eyes getEyes() {
-        return innerContext.get().getEyes();
-    }
-
-    public static void setEyes(Eyes eyes) {
-        innerContext.get().setEyes(eyes);
-    }
-
-    public static VisualGridRunner getVisualGridRunner() throws NoSuchFieldException, IllegalAccessException {
-        return innerContext.get().getVisualGridRunner();
     }
 
 }

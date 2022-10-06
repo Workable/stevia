@@ -40,6 +40,7 @@ import com.persado.oss.quality.stevia.network.http.HttpCookie;
 import com.persado.oss.quality.stevia.selenium.core.controllers.commonapi.KeyInfo;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.Point;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.html5.LocalStorage;
 import org.openqa.selenium.interactions.Actions;
@@ -61,6 +62,8 @@ public interface WebController {
      * Applies only in WebDriverWebController
      */
     void clearStorage();
+
+    WebDriver getDriver();
 
 
     /**

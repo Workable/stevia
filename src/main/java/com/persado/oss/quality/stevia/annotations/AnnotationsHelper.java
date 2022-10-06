@@ -36,15 +36,9 @@ package com.persado.oss.quality.stevia.annotations;
  * #L%
  */
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
-
+import com.persado.oss.quality.stevia.selenium.core.SteviaContext;
+import com.persado.oss.quality.stevia.selenium.core.WebController;
+import com.persado.oss.quality.stevia.selenium.core.controllers.SteviaWebControllerFactory;
 import org.openqa.selenium.WebDriverException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,9 +48,15 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StopWatch;
 
-import com.persado.oss.quality.stevia.selenium.core.SteviaContext;
-import com.persado.oss.quality.stevia.selenium.core.WebController;
-import com.persado.oss.quality.stevia.selenium.core.controllers.SteviaWebControllerFactory;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 @Component
 public class AnnotationsHelper implements ApplicationContextAware {
@@ -147,7 +147,7 @@ public class AnnotationsHelper implements ApplicationContextAware {
 	 * mask existing controller with requestedControllerClass
 	 * @param requestedControllerClass
 	 */
-	private void controllerMask(Class<? extends WebController> requestedControllerClass) throws InterruptedException, ExecutionException, TimeoutException {
+	private void controllerMask(Class<? extends WebController> requestedControllerClass) throws InterruptedException, ExecutionException, TimeoutException, MalformedURLException, NoSuchFieldException, IllegalAccessException {
 		WebController currentControllerObj = SteviaContext.getWebController();
 		Class<? extends WebController> currentControllerClass = currentControllerObj.getClass();
 		String curControllerKey = currentControllerClass.getCanonicalName();
