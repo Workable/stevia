@@ -113,8 +113,6 @@ public class WebDriverWebControllerFactoryImpl implements WebControllerFactory {
 
     private WebDriver getRemoteWebDriver(String rcUrl, Capabilities desiredCapabilities) throws MalformedURLException, NoSuchFieldException, IllegalAccessException {
         WebDriver driver = null;
-        //ReadTimeout when creating the RemoteWebDriver objects
-        //needs to take into consideration the time needed for
         /**
          * When setting readTimeout RemoteWebDriver creation
          * we need to take into consideration the time needed for the Grid node to be spawned
