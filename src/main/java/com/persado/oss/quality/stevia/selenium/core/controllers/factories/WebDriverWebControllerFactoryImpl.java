@@ -41,8 +41,6 @@ import com.persado.oss.quality.stevia.selenium.core.WebController;
 import com.persado.oss.quality.stevia.selenium.core.controllers.SteviaWebControllerFactory;
 import com.persado.oss.quality.stevia.selenium.core.controllers.WebDriverWebController;
 import com.persado.oss.quality.stevia.selenium.loggers.SteviaLogger;
-import org.apache.flink.runtime.concurrent.ScheduledExecutor;
-import org.apache.flink.runtime.concurrent.ScheduledExecutorServiceAdapter;
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.SessionNotCreatedException;
 import org.openqa.selenium.WebDriver;
@@ -55,7 +53,7 @@ import org.openqa.selenium.remote.HttpCommandExecutor;
 import org.openqa.selenium.remote.LocalFileDetector;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.remote.http.ClientConfig;
-import org.openqa.selenium.remote.http.netty.NettyClient;
+import org.openqa.selenium.remote.http.jdk.JdkHttpClient;
 import org.openqa.selenium.remote.tracing.TracedHttpClient;
 import org.openqa.selenium.remote.tracing.Tracer;
 import org.openqa.selenium.remote.tracing.opentelemetry.OpenTelemetryTracer;
@@ -66,9 +64,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Duration;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeoutException;
 
 public class WebDriverWebControllerFactoryImpl implements WebControllerFactory {
@@ -89,10 +86,15 @@ public class WebDriverWebControllerFactoryImpl implements WebControllerFactory {
         System.out.println("Initializing web driver with capabilities:" + SteviaContext.getCapabilities());
         if (SteviaContext.getParam("remote").compareTo(SteviaWebControllerFactory.TRUE) == 0) {
             final String wdHost = SteviaContext.getParam("rcUrl");
-            ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
-            ScheduledExecutor executor = new ScheduledExecutorServiceAdapter(executorService);
+            if (wdHost.contains("gridlastic")) {
+                final String gridlasticUser = wdHost.split("//")[1].split(":")[0];
+                final String gridlasticKey = wdHost.split("//")[1].split(":")[1].split("@")[0];
+                LinkedHashMap<String, String> credentialsMap = new LinkedHashMap<>();
+                credentialsMap.put("gridlasticUser", gridlasticUser);
+                credentialsMap.put("gridlasticKey", gridlasticKey);
+                ((LinkedHashMap<String, String>) capabilities.getCapability("gridlastic:options")).putAll(credentialsMap);
+            }
             driver = getRemoteWebDriver(wdHost, capabilities);
-            executorService.shutdown();
             ((RemoteWebDriver) driver).setFileDetector(new LocalFileDetector());
         } else {
             driver = getLocalDriver(capabilities);
@@ -160,6 +162,7 @@ public class WebDriverWebControllerFactoryImpl implements WebControllerFactory {
      * Set read timeout on NettyClient of WebDriver using Reflection
      * This is needed in order to update the readTimeout private field at a later time of instatiation of RemoteWebDriver object
      * ReadTimeout should have a reasonable value
+     *
      * @param driver
      * @throws NoSuchFieldException
      * @throws IllegalAccessException
@@ -168,17 +171,14 @@ public class WebDriverWebControllerFactoryImpl implements WebControllerFactory {
         if (driver instanceof RemoteWebDriver) {
             Field clientOfExecutor = HttpCommandExecutor.class.getDeclaredField("client");
             Field delegatedClient = TracedHttpClient.class.getDeclaredField("delegate");
-            Field config = NettyClient.class.getDeclaredField("config");
-            Field readTimeout = ClientConfig.class.getDeclaredField("readTimeout");
+            Field readTimeout = JdkHttpClient.class.getDeclaredField("readTimeout");
             clientOfExecutor.setAccessible(true);
             delegatedClient.setAccessible(true);
-            config.setAccessible(true);
             readTimeout.setAccessible(true);
             HttpCommandExecutor executor = (HttpCommandExecutor) ((RemoteWebDriver) driver).getCommandExecutor();
             TracedHttpClient tracedClient = (TracedHttpClient) clientOfExecutor.get(executor);
-            NettyClient client = (NettyClient) delegatedClient.get(tracedClient);
-            ClientConfig finalConfig = (ClientConfig) config.get(client);
-            readTimeout.set(finalConfig, Duration.ofSeconds(60));
+            JdkHttpClient client = (JdkHttpClient) delegatedClient.get(tracedClient);
+            readTimeout.set(client, Duration.ofSeconds(60));
         }
     }
 }
