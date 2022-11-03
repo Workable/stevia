@@ -36,12 +36,11 @@ package com.persado.oss.quality.stevia.selenium.core.controllers.registry;
  * #L%
  */
 
-import javax.annotation.PostConstruct;
-
+import com.persado.oss.quality.stevia.selenium.core.controllers.factories.WebControllerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 
-import com.persado.oss.quality.stevia.selenium.core.controllers.factories.WebControllerFactory;
+import javax.annotation.PostConstruct;
 
 public class Driver<K, V> {
 
