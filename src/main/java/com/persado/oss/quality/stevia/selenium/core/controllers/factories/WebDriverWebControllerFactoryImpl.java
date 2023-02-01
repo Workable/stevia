@@ -7,21 +7,21 @@ package com.persado.oss.quality.stevia.selenium.core.controllers.factories;
  * Copyright (C) 2013 - 2014 Persado
  * %%
  * Copyright (c) Persado Intellectual Property Limited. All rights reserved.
- *  
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- *  
+ *
  * * Redistributions of source code must retain the above copyright notice, this
  * list of conditions and the following disclaimer.
- *  
+ *
  * * Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
  * and/or other materials provided with the distribution.
- *  
+ *
  * * Neither the name of the Persado Intellectual Property Limited nor the names
  * of its contributors may be used to endorse or promote products derived from
  * this software without specific prior written permission.
- *  
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -48,19 +48,19 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
-import org.openqa.selenium.remote.CommandExecutor;
-import org.openqa.selenium.remote.HttpCommandExecutor;
-import org.openqa.selenium.remote.LocalFileDetector;
-import org.openqa.selenium.remote.RemoteWebDriver;
+import org.openqa.selenium.remote.*;
 import org.openqa.selenium.remote.http.ClientConfig;
 import org.openqa.selenium.remote.http.jdk.JdkHttpClient;
 import org.openqa.selenium.remote.tracing.TracedHttpClient;
+import org.openqa.selenium.remote.tracing.Tracer;
+import org.openqa.selenium.remote.tracing.opentelemetry.OpenTelemetryTracer;
 import org.springframework.context.ApplicationContext;
 
 import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -101,7 +101,7 @@ public class WebDriverWebControllerFactoryImpl implements WebControllerFactory {
         if (SteviaContext.getParam(SteviaWebControllerFactory.TARGET_HOST_URL) != null) {
             driver.get(SteviaContext.getParam(SteviaWebControllerFactory.TARGET_HOST_URL));
         }
-        wdController.setDriver(driver);
+        wdController.setDriver(new Augmenter().augment(driver));
         return wdController;
     }
 
@@ -117,8 +117,9 @@ public class WebDriverWebControllerFactoryImpl implements WebControllerFactory {
          * we need to take into consideration the time needed for the Grid node to be spawned
          * Gridlastic suggests setting it to 10 minutes
          */
-        ClientConfig config = ClientConfig.defaultConfig().baseUrl(new URL(rcUrl)).readTimeout(Duration.ofMinutes(Integer.parseInt(SteviaContext.getParam("nodeTimeout")))).withRetries();
-        CommandExecutor executor = new HttpCommandExecutor(config);
+        ClientConfig config = ClientConfig.defaultConfig().baseUrl(new URL(rcUrl)).connectionTimeout(Duration.ofSeconds(30)).readTimeout(Duration.ofMinutes(Integer.parseInt(SteviaContext.getParam("nodeTimeout")))).withRetries();
+        Tracer tracer = OpenTelemetryTracer.getInstance();
+        CommandExecutor executor = new HttpCommandExecutor(Collections.emptyMap(), config, new TracedHttpClient.Factory(tracer, org.openqa.selenium.remote.http.HttpClient.Factory.createDefault()));
         try {
             driver = new RemoteWebDriver(executor, desiredCapabilities);
         } catch (SessionNotCreatedException e) {
