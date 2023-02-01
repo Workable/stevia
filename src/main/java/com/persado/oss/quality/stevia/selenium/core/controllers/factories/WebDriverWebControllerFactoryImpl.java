@@ -55,15 +55,12 @@ import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.remote.http.ClientConfig;
 import org.openqa.selenium.remote.http.jdk.JdkHttpClient;
 import org.openqa.selenium.remote.tracing.TracedHttpClient;
-import org.openqa.selenium.remote.tracing.Tracer;
-import org.openqa.selenium.remote.tracing.opentelemetry.OpenTelemetryTracer;
 import org.springframework.context.ApplicationContext;
 
 import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Duration;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -121,8 +118,7 @@ public class WebDriverWebControllerFactoryImpl implements WebControllerFactory {
          * Gridlastic suggests setting it to 10 minutes
          */
         ClientConfig config = ClientConfig.defaultConfig().baseUrl(new URL(rcUrl)).readTimeout(Duration.ofMinutes(Integer.parseInt(SteviaContext.getParam("nodeTimeout")))).withRetries();
-        Tracer tracer = OpenTelemetryTracer.getInstance();
-        CommandExecutor executor = new HttpCommandExecutor(Collections.emptyMap(), config, new TracedHttpClient.Factory(tracer, org.openqa.selenium.remote.http.HttpClient.Factory.createDefault()));
+        CommandExecutor executor = new HttpCommandExecutor(config);
         try {
             driver = new RemoteWebDriver(executor, desiredCapabilities);
         } catch (SessionNotCreatedException e) {
