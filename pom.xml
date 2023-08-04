@@ -64,7 +64,7 @@
 	</distributionManagement>
 
 	<scm>
-		<developerConnection>scm:git:git://github.com/Workable/stevia.git</developerConnection>
+		<developerConnection>scm:git://github.com/Workable/stevia.git</developerConnection>
 		<tag>stevia-core-1.3.21</tag>
 	</scm>
 
