@@ -51,10 +51,13 @@ import org.testng.xml.XmlSuite;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * The base class that is responsible for initializing Stevia contexts on start and shutting down on
@@ -108,11 +111,7 @@ public class SteviaTestBase extends AbstractTestNGSpringContextTests implements 
      */
     @BeforeSuite(alwaysRun = true)
     protected final void configureSuiteSettings(ITestContext testContext) throws Exception {
-        Map<String, String> parameters = new HashMap<>();
-        Set<String> propNames = System.getProperties().stringPropertyNames();
-        parameters.putAll(testContext.getSuite().getXmlSuite().getAllParameters());
-        propNames.forEach(p ->
-                parameters.put(p, System.getProperty(p)));
+        Map<String, String> parameters = configureParameters(testContext);
 
         setSuiteOutputDir(testContext.getSuite().getOutputDirectory());
 
@@ -142,6 +141,14 @@ public class SteviaTestBase extends AbstractTestNGSpringContextTests implements 
         STEVIA_TEST_BASE_LOG.warn("*************************************************************************************");
         STEVIA_TEST_BASE_LOG.warn("*** SUITE initialisation phase END                                                ***");
         STEVIA_TEST_BASE_LOG.warn("*************************************************************************************");
+    }
+
+    private static Map<String, String> configureParameters(ITestContext testContext) {
+        Map<String, String> parameters = new HashMap<>();
+        Set<String> propNames = System.getProperties().stringPropertyNames();
+        parameters.putAll(testContext.getSuite().getXmlSuite().getAllParameters());
+        propNames.forEach(p -> parameters.put(p, System.getProperty(p)));
+        return parameters;
     }
 
     /**
@@ -193,6 +200,7 @@ public class SteviaTestBase extends AbstractTestNGSpringContextTests implements 
         Map<String, String> parameters = testContext.getCurrentXmlTest().getParameters();
         testContext.getCurrentXmlTest().setParallel(XmlSuite.ParallelMode.getValidParallel(parameters.get("parallelSetup")));
         String parallelSetup = testContext.getSuite().getParallel();
+
         if (parallelSetup == null || parallelSetup.isEmpty() || parallelSetup.equalsIgnoreCase("false") || parallelSetup.equalsIgnoreCase("none") || parallelSetup.equalsIgnoreCase("tests")) {
 
             STEVIA_TEST_BASE_LOG.warn("*************************************************************************************");
@@ -310,11 +318,20 @@ public class SteviaTestBase extends AbstractTestNGSpringContextTests implements 
         }
         SteviaContext.attachSpringContext(applicationContext);
 
-        WebController controller = SteviaWebControllerFactory.getWebController(applicationContext);
-        SteviaContext.setWebController(controller);
+        if (params.get("run.api.test") == null || params.get("run.api.test").equalsIgnoreCase("false")) {
+            configureWebController();
+        }
 
     }
 
+    private void configureWebController() throws MalformedURLException, InterruptedException, ExecutionException, TimeoutException, NoSuchFieldException, IllegalAccessException {
+        if (applicationContext == null) {
+            throw new IllegalStateException("ApplicationContext not set - Stevia cannot continue");
+        }
+
+        WebController controller = SteviaWebControllerFactory.getWebController(applicationContext);
+        SteviaContext.setWebController(controller);
+    }
 
     /**
      * Stop RC server if it's running.

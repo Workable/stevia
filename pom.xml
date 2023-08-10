@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.persado.oss.quality.stevia</groupId>
 	<artifactId>stevia-core</artifactId>
-	<version>1.3.20-SNAPSHOT</version>
+	<version>1.3.22-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>Stevia QA Framework - Core</name>
@@ -64,8 +64,10 @@
 	</distributionManagement>
 
 	<scm>
-		<developerConnection>scm:git:https://github.com/Workable/stevia.git</developerConnection>
-		<tag>HEAD</tag>
+		<url>https://github.com/Workable/stevia</url>
+		<connection>scm:git:git://github.com/Workable/stevia.git</connection>
+		<developerConnection>scm:git:git@github.com:Workable/stevia.git</developerConnection>
+		<tag>stevia-core-1.3.21</tag>
 	</scm>
 
 	<build>
