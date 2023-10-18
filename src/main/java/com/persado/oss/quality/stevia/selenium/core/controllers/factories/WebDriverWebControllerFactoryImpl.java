@@ -46,6 +46,8 @@ import org.openqa.selenium.SessionNotCreatedException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.edge.EdgeDriver;
+import org.openqa.selenium.edge.EdgeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.remote.*;
@@ -143,6 +145,9 @@ public class WebDriverWebControllerFactoryImpl implements WebControllerFactory {
                 break;
             case "firefox":
                 driver = new FirefoxDriver((FirefoxOptions) capabilities);
+                break;
+            case "MicrosoftEdge":
+                driver = new EdgeDriver((EdgeOptions) capabilities);
                 break;
             default:
                 throw new IllegalStateException("Browser requested is invalid");
