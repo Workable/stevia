@@ -90,7 +90,6 @@ public class SteviaTestBase extends AbstractTestNGSpringContextTests implements 
 
     /**
      * Extends the TestNG method to prepare the Spring contexts for parallel tests.
-     * * As seen at {@link http://goo.gl/g8QT2}
      *
      * @throws Exception the exception
      */
@@ -104,16 +103,12 @@ public class SteviaTestBase extends AbstractTestNGSpringContextTests implements 
 
 
     /**
-     * Start rc server.
      *
-     * @param testContext the test context
      * @throws Exception the exception
      */
     @BeforeSuite(alwaysRun = true)
-    protected final void configureSuiteSettings(ITestContext testContext) throws Exception {
-        Map<String, String> parameters = configureParameters(testContext);
-
-        setSuiteOutputDir(testContext.getSuite().getOutputDirectory());
+    protected final void configureSuiteSettings() throws Exception {
+        Map<String, String> parameters = configureParameters();
 
         //stevia context init
 
@@ -128,7 +123,7 @@ public class SteviaTestBase extends AbstractTestNGSpringContextTests implements 
         }
 
         // user code
-        suiteInitialisation(testContext);
+        suiteInitialisation();
         if (initContext) {
             initializeStevia(parameters);
         }
@@ -144,9 +139,14 @@ public class SteviaTestBase extends AbstractTestNGSpringContextTests implements 
     }
 
     private static Map<String, String> configureParameters(ITestContext testContext) {
+        Set<String> propNames = System.getProperties().stringPropertyNames();
+        Map<String, String> parameters = new HashMap<>(testContext.getSuite().getXmlSuite().getAllParameters());
+        propNames.forEach(p -> parameters.put(p, System.getProperty(p)));
+        return parameters;
+    }
+    private static Map<String, String> configureParameters() {
         Map<String, String> parameters = new HashMap<>();
         Set<String> propNames = System.getProperties().stringPropertyNames();
-        parameters.putAll(testContext.getSuite().getXmlSuite().getAllParameters());
         propNames.forEach(p -> parameters.put(p, System.getProperty(p)));
         return parameters;
     }
@@ -158,9 +158,8 @@ public class SteviaTestBase extends AbstractTestNGSpringContextTests implements 
      * class extending this Base, at Suite initialisation, best place for this
      * method to be overriden is at the class extending this Base class).
      *
-     * @param context test context
      */
-    protected void suiteInitialisation(ITestContext context) {
+    protected void suiteInitialisation() {
         STEVIA_TEST_BASE_LOG.warn("***************************************************************************************");
         STEVIA_TEST_BASE_LOG.warn("*** suiteInitialisation() not overriden. Check your code and javadoc of method      ***");
         STEVIA_TEST_BASE_LOG.warn("*** NOTE: suiteInitialisation() by default has a SteviaContext to work with.        ***");
@@ -196,8 +195,9 @@ public class SteviaTestBase extends AbstractTestNGSpringContextTests implements 
      */
     @BeforeTest(alwaysRun = true)
     protected final void contextInitBeforeTest(ITestContext testContext) throws Exception {
+        configureParameters(testContext);
         testInitialisation(testContext);
-        Map<String, String> parameters = testContext.getCurrentXmlTest().getParameters();
+        Map<String, String> parameters = testContext.getCurrentXmlTest().getAllParameters();
         testContext.getCurrentXmlTest().setParallel(XmlSuite.ParallelMode.getValidParallel(parameters.get("parallelSetup")));
         String parallelSetup = testContext.getSuite().getParallel();
 
@@ -334,90 +334,12 @@ public class SteviaTestBase extends AbstractTestNGSpringContextTests implements 
     }
 
     /**
-     * Stop RC server if it's running.
-     */
-    @AfterSuite(alwaysRun = true)
-    private void stopRCServer() {
-        if (isRCStarted) {
-
-            Object server = seleniumServer[0];
-            Method stopMethod = (Method) seleniumServer[1];
-            try {
-                stopMethod.invoke(server);
-            } catch (Exception e) {
-
-                STEVIA_TEST_BASE_LOG.warn("Failed to shutdown the Selenium Server", e);
-            }
-
-        }
-    }
-
-    /**
-     * Start RC server programmatic.
-     *
-     * @throws Exception the exception
-     */
-    private void startRCServer() throws Exception {
-        STEVIA_TEST_BASE_LOG.info("Selenium RC mode run in local enviroment; First start Selenium RC Server");
-
-        if (seleniumServerInClassPath()) {
-            seleniumServerLoadAndStart();
-        } else {
-            STEVIA_TEST_BASE_LOG.error("Selenium server is not in the classpath, please modify and retry");
-        }
-        /*RemoteControlConfiguration rc = new RemoteControlConfiguration();
-        seleniumServer = new SeleniumServer(rc);
-		seleniumServer.start();
-		isRCStarted=true;*/
-    }
-
-
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    private void seleniumServerLoadAndStart() {
-        try {
-            Class seleniumServerClazz = Class.forName("org.openqa.selenium.server.SeleniumServer");
-            Class remoteControlConfigurationClazz = Class.forName("org.openqa.selenium.server.RemoteControlConfiguration");
-            Object remoteControlConf = remoteControlConfigurationClazz.newInstance();
-            Constructor constructor = seleniumServerClazz.getConstructor(remoteControlConfigurationClazz);
-            constructor.setAccessible(true);
-            Object seleniumServerObj = constructor.newInstance(remoteControlConf);
-            Method startMethod = seleniumServerClazz.getMethod("start");
-            startMethod.invoke(seleniumServerObj);
-            SteviaTestBase.seleniumServer = new Object[]{seleniumServerObj, seleniumServerClazz.getMethod("stop")};
-            isRCStarted = true;
-        } catch (Exception e) {
-            STEVIA_TEST_BASE_LOG.error("Selenium Server cannot be started, the class path does not contain it. Modify your pom.xml to include it", e);
-        }
-    }
-
-
-    private boolean seleniumServerInClassPath() {
-        try {
-            Class.forName("org.openqa.selenium.server.SeleniumServer");
-            return true;
-        } catch (ClassNotFoundException e) {
-            return false;
-        }
-    }
-
-
-    /**
      * Gets the suite output dir.
      *
      * @return the suite output dir
      */
     public static String getSuiteOutputDir() {
         return suiteOutputDir;
-    }
-
-
-    /**
-     * Sets the suite output dir.
-     *
-     * @param suiteOutputDir the new suite output dir
-     */
-    public final static void setSuiteOutputDir(String suiteOutputDir) {
-        SteviaTestBase.suiteOutputDir = suiteOutputDir;
     }
 
     private void uninstallApp(String deviceId, String appId) {
