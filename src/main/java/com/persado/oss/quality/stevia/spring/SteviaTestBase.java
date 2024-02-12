@@ -116,22 +116,9 @@ public class SteviaTestBase extends AbstractTestNGSpringContextTests implements 
         STEVIA_TEST_BASE_LOG.warn("*** SUITE initialisation phase START                                              ***");
         STEVIA_TEST_BASE_LOG.warn("*************************************************************************************");
 
-        boolean initContext = true;
-        if (parameters.get("suite.init.context") != null && parameters.get("suite.init.context").startsWith("false")) {
-            initContext = false;
-            STEVIA_TEST_BASE_LOG.info("suite initialisation via suiteInitialisation() override will not use a Stevia Context");
-        }
-
         // user code
         suiteInitialisation();
-        if (initContext) {
-            initializeStevia(parameters);
-        }
 
-        if (initContext) {
-            //stevia context clean
-            SteviaContext.clean();
-        }
         SteviaContext.registerParameters(SteviaContextSupport.getParameters(parameters));
         STEVIA_TEST_BASE_LOG.warn("*************************************************************************************");
         STEVIA_TEST_BASE_LOG.warn("*** SUITE initialisation phase END                                                ***");
@@ -163,8 +150,6 @@ public class SteviaTestBase extends AbstractTestNGSpringContextTests implements 
         STEVIA_TEST_BASE_LOG.warn("***************************************************************************************");
         STEVIA_TEST_BASE_LOG.warn("*** suiteInitialisation() not overriden. Check your code and javadoc of method      ***");
         STEVIA_TEST_BASE_LOG.warn("*** NOTE: suiteInitialisation() by default has a SteviaContext to work with.        ***");
-        STEVIA_TEST_BASE_LOG.warn("***       If you don't want this (one extra browser to start/stop) define           ***");
-        STEVIA_TEST_BASE_LOG.warn("***       parameter 'suite.init.context' with value 'false'                         ***");
         STEVIA_TEST_BASE_LOG.warn("***************************************************************************************");
     }
 
@@ -182,8 +167,6 @@ public class SteviaTestBase extends AbstractTestNGSpringContextTests implements 
         STEVIA_TEST_BASE_LOG.warn("***************************************************************************************");
         STEVIA_TEST_BASE_LOG.warn("*** suiteInitialisation() not overriden. Check your code and javadoc of method      ***");
         STEVIA_TEST_BASE_LOG.warn("*** NOTE: suiteInitialisation() by default has a SteviaContext to work with.        ***");
-        STEVIA_TEST_BASE_LOG.warn("***       If you don't want this (one extra browser to start/stop) define           ***");
-        STEVIA_TEST_BASE_LOG.warn("***       parameter 'suite.init.context' with value 'false'                         ***");
         STEVIA_TEST_BASE_LOG.warn("***************************************************************************************");
     }
 
