@@ -41,9 +41,7 @@ import com.persado.oss.quality.stevia.selenium.core.WebController;
 import com.persado.oss.quality.stevia.selenium.core.controllers.SteviaWebControllerFactory;
 import com.persado.oss.quality.stevia.selenium.core.controllers.WebDriverWebController;
 import com.persado.oss.quality.stevia.selenium.loggers.SteviaLogger;
-import org.openqa.selenium.Capabilities;
-import org.openqa.selenium.SessionNotCreatedException;
-import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.edge.EdgeDriver;
@@ -79,22 +77,25 @@ public class WebDriverWebControllerFactoryImpl implements WebControllerFactory {
 
         // Handle type of webdriver based on "remote" param
         System.out.println("Initializing web driver with capabilities:" + SteviaContext.getCapabilities());
-        if (SteviaContext.getParam("remote").compareTo(SteviaWebControllerFactory.TRUE) == 0) {
-            final String wdHost = SteviaContext.getParam("rcUrl");
-            if (wdHost.contains("gridlastic")) {
-                final String gridlasticUser = wdHost.split("//")[1].split(":")[0];
-                final String gridlasticKey = wdHost.split("//")[1].split(":")[1].split("@")[0];
-                LinkedHashMap<String, String> credentialsMap = new LinkedHashMap<>();
-                credentialsMap.put("gridlasticUser", gridlasticUser);
-                credentialsMap.put("gridlasticKey", gridlasticKey);
-                ((LinkedHashMap<String, String>) capabilities.getCapability("gridlastic:options")).putAll(credentialsMap);
-            }
-            driver = getRemoteWebDriver(wdHost, capabilities);
-            ((RemoteWebDriver) driver).setFileDetector(new LocalFileDetector());
-        } else {
-            driver = getLocalDriver(capabilities);
-        }
+        String grid = SteviaContext.getParam("grid");
+        final String wdHost = SteviaContext.getParam("rcUrl");
+        GridInfo gridInfo;
+        switch (grid) {
+            case "gridlastic":
+                gridInfo = setGridlasticOptions(capabilities, wdHost);
+                driver = getRemoteWebDriver(gridInfo.gridUrl, capabilities, gridInfo);
+                ((RemoteWebDriver) driver).setFileDetector(new LocalFileDetector());
+                break;
+            case "custom":
+                gridInfo = GridInfo.parseUrl(wdHost, grid);
+                driver = getRemoteWebDriver(gridInfo.gridUrl, capabilities, gridInfo);
+                ((RemoteWebDriver) driver).setFileDetector(new LocalFileDetector());
+                break;
+            default:
+                driver = getLocalDriver(capabilities);
+                break;
 
+        }
         //Navigate to the desired target host url
         if (SteviaContext.getParam(SteviaWebControllerFactory.TARGET_HOST_URL) != null) {
             driver.get(SteviaContext.getParam(SteviaWebControllerFactory.TARGET_HOST_URL));
@@ -108,14 +109,15 @@ public class WebDriverWebControllerFactoryImpl implements WebControllerFactory {
         return "webDriverController";
     }
 
-    private WebDriver getRemoteWebDriver(String rcUrl, Capabilities desiredCapabilities) throws MalformedURLException, NoSuchFieldException, IllegalAccessException {
+    private WebDriver getRemoteWebDriver(String rcUrl, Capabilities desiredCapabilities, GridInfo gridInfo) throws MalformedURLException, NoSuchFieldException, IllegalAccessException {
         WebDriver driver = null;
         /**
          * When setting readTimeout RemoteWebDriver creation
          * we need to take into consideration the time needed for the Grid node to be spawned
          * Gridlastic suggests setting it to 10 minutes
          */
-        ClientConfig config = ClientConfig.defaultConfig().baseUrl(new URL(rcUrl)).connectionTimeout(Duration.ofSeconds(40L)).readTimeout(Duration.ofMinutes(Integer.parseInt(SteviaContext.getParam("nodeTimeout")))).withRetries();
+        ClientConfig baseConfig = ClientConfig.defaultConfig().baseUrl(new URL(rcUrl)).connectionTimeout(Duration.ofSeconds(40L)).readTimeout(Duration.ofMinutes(Integer.parseInt(SteviaContext.getParam("nodeTimeout")))).withRetries();
+        ClientConfig config = (SteviaContext.getParam("grid").equals("gridlastic") || !gridInfo.hasBasicAuth) ? baseConfig : baseConfig.authenticateAs(new UsernameAndPassword(gridInfo.userName, gridInfo.password));
         CommandExecutor executor = new HttpCommandExecutor(config);
         try {
             driver = new RemoteWebDriver(executor, desiredCapabilities);
@@ -173,6 +175,50 @@ public class WebDriverWebControllerFactoryImpl implements WebControllerFactory {
             HttpCommandExecutor executor = (HttpCommandExecutor) ((RemoteWebDriver) driver).getCommandExecutor();
             JdkHttpClient client = (JdkHttpClient) clientOfExecutor.get(executor);
             readTimeout.set(client, Duration.ofSeconds(60));
+        }
+    }
+
+    /**
+     * Set up the correct options in case of Gridlastic
+     * @param capabilities
+     * @param wdHost
+     */
+    private GridInfo setGridlasticOptions(Capabilities capabilities, String wdHost) {
+        GridInfo gridInfo = GridInfo.parseUrl(wdHost, "gridlastic");
+        LinkedHashMap<String, String> credentialsMap = new LinkedHashMap<>();
+        credentialsMap.put("gridlasticUser", gridInfo.userName);
+        credentialsMap.put("gridlasticKey", gridInfo.password);
+        ((LinkedHashMap<String, String>) capabilities.getCapability("gridlastic:options")).putAll(credentialsMap);
+        return gridInfo;
+    }
+
+    /**
+     * Extract grid parameters from grid url
+     */
+    private static class GridInfo {
+        private final String userName;
+        private final String password;
+        private final String gridUrl;
+
+        private final boolean hasBasicAuth;
+
+        private GridInfo(String userName, String password, String gridUrl, boolean hasBasicAuth) {
+            this.userName = userName;
+            this.password = password;
+            this.gridUrl = gridUrl;
+            this.hasBasicAuth = hasBasicAuth;
+        }
+
+        static GridInfo parseUrl(String gridUrl, String grid) {
+            boolean isBasicAuth = hasBasicAuth(gridUrl);
+            String uName = isBasicAuth ? gridUrl.split("//")[1].split(":")[0] : null;
+            String pwd = isBasicAuth ? gridUrl.split("//")[1].split(":")[1].split("@")[0] : null;
+            String url = (grid.equals("gridlastic") || !isBasicAuth) ? gridUrl : gridUrl.replace(uName + ':' + pwd + '@', "");
+            return new GridInfo(uName, pwd, url, isBasicAuth);
+        }
+
+        private static boolean hasBasicAuth(String gridUrl) {
+            return gridUrl.matches("(http|https)://\\w+:\\w+@.*");
         }
     }
 }
