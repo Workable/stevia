@@ -40,7 +40,7 @@ If you changed your mind, or something got wrong:
 - mvn release:rollback
 - mvn release:clean
 
-## Deploying a Snapshot to JFrog
+## Deploying a Snapshot to Artifactory
 
 - mvn clean deploy -DskipTests
 
