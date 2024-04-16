@@ -7,21 +7,21 @@ package com.persado.oss.quality.stevia.selenium.core.controllers.factories;
  * Copyright (C) 2013 - 2014 Persado
  * %%
  * Copyright (c) Persado Intellectual Property Limited. All rights reserved.
- *  
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- *  
+ *
  * * Redistributions of source code must retain the above copyright notice, this
  * list of conditions and the following disclaimer.
- *  
+ *
  * * Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
  * and/or other materials provided with the distribution.
- *  
+ *
  * * Neither the name of the Persado Intellectual Property Limited nor the names
  * of its contributors may be used to endorse or promote products derived from
  * this software without specific prior written permission.
- *  
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -41,7 +41,10 @@ import com.persado.oss.quality.stevia.selenium.core.WebController;
 import com.persado.oss.quality.stevia.selenium.core.controllers.SteviaWebControllerFactory;
 import com.persado.oss.quality.stevia.selenium.core.controllers.WebDriverWebController;
 import com.persado.oss.quality.stevia.selenium.loggers.SteviaLogger;
-import org.openqa.selenium.*;
+import org.openqa.selenium.Capabilities;
+import org.openqa.selenium.SessionNotCreatedException;
+import org.openqa.selenium.UsernameAndPassword;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.edge.EdgeDriver;
@@ -174,12 +177,13 @@ public class WebDriverWebControllerFactoryImpl implements WebControllerFactory {
             readTimeout.setAccessible(true);
             HttpCommandExecutor executor = (HttpCommandExecutor) ((RemoteWebDriver) driver).getCommandExecutor();
             JdkHttpClient client = (JdkHttpClient) clientOfExecutor.get(executor);
-            readTimeout.set(client, Duration.ofSeconds(60));
+            readTimeout.set(client, Duration.ofSeconds(120));
         }
     }
 
     /**
      * Set up the correct options in case of Gridlastic
+     *
      * @param capabilities
      * @param wdHost
      */
