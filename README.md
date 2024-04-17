@@ -40,8 +40,8 @@ If you changed your mind, or something got wrong:
 - mvn release:rollback
 - mvn release:clean
 
-## Deploying a Snapshot to Artifactory
+Upon release artifact will also be uploaded in [Gcloud Artifacts registry](https://console.cloud.google.com/artifacts/maven/staging-artifacts-786a/us-east4/maven-local/com.persado.oss.quality.stevia:stevia-core?hl=en&project=staging-artifacts-786a)
+
+## Deploying a Snapshot to Gcloud Artifactory
 
 - mvn clean deploy -DskipTests
-
- Artifact is deployed under maven-local/com/persado/oss/quality/stevia/stevia-core/
