@@ -41,7 +41,7 @@ import java.lang.reflect.Method;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.IInvokedMethod;
-import org.testng.IInvokedMethodListener2;
+import org.testng.IInvokedMethodListener;
 import org.testng.ITestContext;
 import org.testng.ITestResult;
 import org.testng.annotations.Test;
@@ -51,7 +51,7 @@ import com.persado.oss.quality.stevia.annotations.Preconditions;
 import com.persado.oss.quality.stevia.annotations.AnnotationsHelper;
 import com.persado.oss.quality.stevia.selenium.core.SteviaContext;
 
-public class ConditionsListener extends ListenerCommon implements IInvokedMethodListener2 {
+public class ConditionsListener extends ListenerCommon implements IInvokedMethodListener {
 
 	static final Logger LOG = LoggerFactory.getLogger(ConditionsListener.class);
 	

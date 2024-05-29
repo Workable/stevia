@@ -7,21 +7,21 @@ package com.persado.oss.quality.stevia.selenium.core.controllers.webdriverapi;
  * Copyright (C) 2013 - 2014 Persado
  * %%
  * Copyright (c) Persado Intellectual Property Limited. All rights reserved.
- *  
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- *  
+ *
  * * Redistributions of source code must retain the above copyright notice, this
  * list of conditions and the following disclaimer.
- *  
+ *
  * * Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
  * and/or other materials provided with the distribution.
- *  
+ *
  * * Neither the name of the Persado Intellectual Property Limited nor the names
  * of its contributors may be used to endorse or promote products derived from
  * this software without specific prior written permission.
- *  
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -77,6 +77,7 @@ public abstract class BySizzle extends By {
         private static final String HTTPS = "https://";
         private static final String HTTP = "http://";
         private static final String DEFAULT_SIZZLE_URL = "http://cdnjs.cloudflare.com/ajax/libs/sizzle/2.3.3/sizzle.min.js";
+        private static final String INVALID_SELECTOR_EXCEPTION_MESSAGE = "An invalid or illegal selector was specified";
 
         private String ownSelector;
 
@@ -88,8 +89,10 @@ public abstract class BySizzle extends By {
         public WebElement findElement(SearchContext context) {
             try {
                 return context.findElement(By.cssSelector(ownSelector));
-            } catch (InvalidSelectorException ex) {
-                return findElementBySizzleCss(context, ownSelector);
+            } catch (Exception ex) {
+                if (ex instanceof InvalidSelectorException || (ex instanceof JavascriptException && ex.getMessage().contains(INVALID_SELECTOR_EXCEPTION_MESSAGE)))
+                    return findElementBySizzleCss(context, ownSelector);
+                throw ex;
             }
         }
 
@@ -97,8 +100,10 @@ public abstract class BySizzle extends By {
         public List<WebElement> findElements(SearchContext context) {
             try {
                 return context.findElements(By.cssSelector(ownSelector));
-            } catch (InvalidSelectorException ex) {
-                return findElementsBySizzleCss(context, ownSelector);
+            } catch (Exception ex) {
+                if (ex instanceof InvalidSelectorException || (ex instanceof JavascriptException && ex.getMessage().contains(INVALID_SELECTOR_EXCEPTION_MESSAGE)))
+                    return findElementsBySizzleCss(context, ownSelector);
+                throw ex;
             }
         }
 
