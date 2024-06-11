@@ -312,12 +312,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.seleniumhq.selenium</groupId>
-			<artifactId>selenium-http-jdk-client</artifactId>
-			<version>${selenium.version}</version>
-		</dependency>
-
-		<dependency>
 			<groupId>com.opera</groupId>
 			<artifactId>operadriver</artifactId>
 			<version>1.5</version>
@@ -462,7 +456,7 @@
 	<!-- Shared version number properties -->
 	<properties>
 		<org.springframework.version>5.0.2.RELEASE</org.springframework.version>
-		<selenium.version>4.13.0</selenium.version>
+		<selenium.version>4.20.0</selenium.version>
 		<appium.version>8.3.0</appium.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.scm.id>stevia</project.scm.id>
