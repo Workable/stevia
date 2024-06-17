@@ -8,7 +8,7 @@ Our 10-minutes guide for using Stevia is in our [wiki](https://github.com/persad
 ## Features
 
 The following features are supported in the current Stevia build (new features have a version next to them):
-* Works with latest Selenium libraries (2.41+) and Spring 3.2.x (4.0 coming soon)
+* Works with latest Selenium libraries (4.20+) and Spring 3.2.x (4.0 coming soon)
 * Works with stable TestNG tested for parallel running
 * Supports both Webdriver and Selenium RC, standalone or Grid via easy configuration
 * Supports TestNG with parallel test execution (each thread has its own browser/session)
@@ -29,19 +29,31 @@ The following features are supported in the current Stevia build (new features h
     * RunsWithController - allows a different controller (different browser or session) to run a @Test method or class
     * [Preconditions](http://seleniumtestingworld.blogspot.gr/2014/04/concurrency-testing-made-easy.html) - allows methods to be called (optionally with different controller) before @Test method
     * Postconditions - similar to @Precondition but after the @Test method.
-* lots of other minor features
+* Lots of other minor features
 
 ## Release Management - Maven release plugin
 
-- mvn clean -Darguments=-DskipTests release:prepare
-- mvn clean -Darguments=-DskipTests release:perform
+```console
+mvn clean -Darguments=-DskipTests release:prepare
+```
 
-If you changed your mind, or something got wrong:
-- mvn release:rollback
-- mvn release:clean
+```console
+mvn clean -Darguments=-DskipTests release:perform
+```
+
+If you changed your mind, or something went wrong:
+```console
+mvn release:rollback
+```
+
+```console
+mvn release:clean
+```
 
 Upon release artifact will also be uploaded in [Gcloud Artifacts registry](https://console.cloud.google.com/artifacts/maven/staging-artifacts-786a/us-east4/maven-local/com.persado.oss.quality.stevia:stevia-core?hl=en&project=staging-artifacts-786a)
 
 ## Deploying a Snapshot to Gcloud Artifactory
 
-- mvn clean deploy -DskipTests
+```console
+mvn clean deploy -DskipTests
+```
