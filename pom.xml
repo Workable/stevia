@@ -227,19 +227,19 @@
 		<dependency>
 			<groupId>org.jsoup</groupId>
 			<artifactId>jsoup</artifactId>
-			<version>1.7.3</version>
+			<version>1.17.2</version>
 		</dependency>
 		<dependency>
 			<groupId>us.codecraft</groupId>
 			<artifactId>xsoup</artifactId>
-			<version>0.3.0</version>
+			<version>0.3.7</version>
 		</dependency>
 
 
 		<dependency>
 			<groupId>org.apache.flink</groupId>
 			<artifactId>flink-runtime_2.12</artifactId>
-			<version>1.12.0</version>
+			<version>1.13.6</version>
 		</dependency>
 
 
@@ -247,7 +247,7 @@
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-client</artifactId>
-			<version>8.1.8.v20121106</version>
+			<version>12.0.10</version>
 		</dependency>
 
 		<!-- Suite of Java SSH applications providing a Java SSH API, SSH Terminal,
@@ -301,7 +301,7 @@
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
-			<version>23.0</version>
+			<version>33.2.1-jre</version>
 		</dependency>
 
 		<!-- Selenium Server Standalone -->
@@ -435,7 +435,7 @@
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
-			<version>1.1.0</version>
+			<version>1.5.6</version>
 			<scope>test</scope>
 		</dependency>
 
@@ -455,7 +455,7 @@
 
 	<!-- Shared version number properties -->
 	<properties>
-		<org.springframework.version>5.0.2.RELEASE</org.springframework.version>
+		<org.springframework.version>5.3.37</org.springframework.version>
 		<selenium.version>4.20.0</selenium.version>
 		<appium.version>8.3.0</appium.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
