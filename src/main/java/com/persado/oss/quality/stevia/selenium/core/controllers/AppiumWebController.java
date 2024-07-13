@@ -43,8 +43,8 @@ import com.persado.oss.quality.stevia.selenium.core.SteviaContext;
 import com.persado.oss.quality.stevia.selenium.core.WebController;
 import com.persado.oss.quality.stevia.selenium.core.controllers.commonapi.KeyInfo;
 import com.persado.oss.quality.stevia.selenium.core.controllers.webdriverapi.BySizzle;
+import io.appium.java_client.AppiumBy;
 import io.appium.java_client.AppiumDriver;
-import io.appium.java_client.MobileBy;
 import io.appium.java_client.PerformsTouchActions;
 import io.appium.java_client.TouchAction;
 import io.appium.java_client.touch.TapOptions;
@@ -253,29 +253,29 @@ public class AppiumWebController extends WebControllerBase implements WebControl
      */
     public By determineLocator(String locator) {
         if (locator.startsWith(XPATH)) {
-            return MobileBy.xpath(findLocatorSubstring(locator));
+            return AppiumBy.xpath(findLocatorSubstring(locator));
         } else if (locator.startsWith("//")) {
-            return MobileBy.xpath(locator);
+            return AppiumBy.xpath(locator);
         } else if (locator.startsWith(CSS)) {
             return BySizzle.css(findLocatorSubstring(locator));
         } else if (locator.startsWith(NAME)) {
-            return MobileBy.name(findLocatorSubstring(locator));
+            return AppiumBy.name(findLocatorSubstring(locator));
         } else if (locator.startsWith(LINK)) {
-            return MobileBy.linkText(findLocatorSubstring(locator));
+            return AppiumBy.linkText(findLocatorSubstring(locator));
         } else if (locator.startsWith(ID)) {
-            return MobileBy.id(findLocatorSubstring(locator));
+            return AppiumBy.id(findLocatorSubstring(locator));
         } else if (locator.startsWith(TAG)) {
-            return MobileBy.tagName(findLocatorSubstring(locator));
+            return AppiumBy.tagName(findLocatorSubstring(locator));
         } else if (locator.startsWith(CLASS)) {
-            return MobileBy.className(findLocatorSubstring(locator));
+            return AppiumBy.className(findLocatorSubstring(locator));
         } else if (locator.startsWith(ACC_ID)) {
-            return MobileBy.AccessibilityId(findLocatorSubstring(locator));
+            return AppiumBy.accessibilityId(findLocatorSubstring(locator));
         } else if (locator.startsWith(CLASS_CHAIN)) {
-            return MobileBy.iOSClassChain(findLocatorSubstring(locator));
+            return AppiumBy.iOSClassChain(findLocatorSubstring(locator));
         } else if (locator.startsWith(UI_AUTO)) {
-            return MobileBy.AndroidUIAutomator(findLocatorSubstring(locator));
+            return AppiumBy.androidUIAutomator(findLocatorSubstring(locator));
         } else {
-            return MobileBy.id(locator);
+            return AppiumBy.id(locator);
         }
     }
 
