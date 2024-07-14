@@ -90,7 +90,7 @@ public class AppiumWebControllerFactoryImpl implements WebControllerFactory {
     private URL buildAppiumUrl() throws MalformedURLException {
         String rcHost = SteviaContext.getParam(SteviaWebControllerFactory.RC_HOST);
         String rcPort = SteviaContext.getParam(SteviaWebControllerFactory.RC_PORT);
-        String url = String.format("http://%s:%s/wd/hub", rcHost, rcPort);
+        String url = String.format("http://%s:%s/", rcHost, rcPort);
         return new URL(url);
     }
 
