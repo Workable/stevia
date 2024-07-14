@@ -76,9 +76,9 @@ public class AppiumWebControllerFactoryImpl implements WebControllerFactory {
         AppiumDriver driver = null;
         String platform = capabilities.getCapability("platformName").toString();
         try {
-            if (platform.equals("Android")) {
+            if (platform.equalsIgnoreCase("Android")) {
                 driver = new AndroidDriver(buildAppiumUrl(), capabilities);
-            } else if (platform.equals("iOS")) {
+            } else if (platform.equalsIgnoreCase("iOS")) {
                 driver = new IOSDriver(buildAppiumUrl(), capabilities);
             }
         } catch (MalformedURLException e) {
