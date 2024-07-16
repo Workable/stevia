@@ -1848,7 +1848,7 @@ public class AppiumWebController extends WebControllerBase implements WebControl
     public void tap(String locator) {
         PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
         Sequence tap = new Sequence(finger, 1)
-                .addAction(finger.createPointerMove(Duration.ofMillis(0), PointerInput.Origin.viewport(), waitForElement(locator).getLocation().getX(), waitForElement(locator).getLocation().getY()))
+                .addAction(finger.createPointerMove(Duration.ofMillis(0), PointerInput.Origin.viewport(), waitForElement(locator).getLocation().getX(), waitForElement(locator).getLocation().getY()+1))
                 .addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()))
                 .addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
 
