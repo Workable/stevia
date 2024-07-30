@@ -36,22 +36,15 @@ package com.persado.oss.quality.stevia.selenium.core.controllers.factories;
  * #L%
  */
 
-import com.google.common.collect.ImmutableMap;
 import com.persado.oss.quality.stevia.selenium.core.SteviaContext;
 import com.persado.oss.quality.stevia.selenium.core.WebController;
 import com.persado.oss.quality.stevia.selenium.core.controllers.AppiumWebController;
 import com.persado.oss.quality.stevia.selenium.core.controllers.SteviaWebControllerFactory;
-import com.persado.oss.quality.stevia.selenium.core.controllers.commonapi.WantedAppiumCapabilities;
 import io.appium.java_client.AppiumDriver;
 import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.ios.IOSDriver;
-import io.appium.java_client.remote.AndroidMobileCapabilityType;
-import io.appium.java_client.remote.IOSMobileCapabilityType;
-import io.appium.java_client.remote.MobileCapabilityType;
 import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.Capabilities;
-import org.openqa.selenium.Platform;
-import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.LocalFileDetector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,7 +52,6 @@ import org.springframework.context.ApplicationContext;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.List;
 
 public class AppiumWebControllerFactoryImpl implements WebControllerFactory {
 
@@ -82,11 +74,11 @@ public class AppiumWebControllerFactoryImpl implements WebControllerFactory {
 
     private AppiumDriver getDriverForPlatform(Capabilities capabilities) {
         AppiumDriver driver = null;
-        String platform = capabilities.getCapability(MobileCapabilityType.PLATFORM_NAME).toString();
+        String platform = capabilities.getCapability("platformName").toString();
         try {
-            if (platform.equals("Android")) {
+            if (platform.equalsIgnoreCase("Android")) {
                 driver = new AndroidDriver(buildAppiumUrl(), capabilities);
-            } else if (platform.equals("iOS")) {
+            } else if (platform.equalsIgnoreCase("iOS")) {
                 driver = new IOSDriver(buildAppiumUrl(), capabilities);
             }
         } catch (MalformedURLException e) {
@@ -104,33 +96,6 @@ public class AppiumWebControllerFactoryImpl implements WebControllerFactory {
 
     private boolean variableExists(String param) {
         return !StringUtils.isEmpty(SteviaContext.getParam(param));
-    }
-
-    private void setupIOSCapabilities(DesiredCapabilities capabilities) {
-        if (SteviaContext.getParam("runOnRealDevice").equals("true")) {
-            setCapabilityIfExists(capabilities, "realDeviceLogger");
-            setCapabilityIfExists(capabilities, IOSMobileCapabilityType.XCODE_CONFIG_FILE);
-        }
-
-        setCapabilitiesInList(capabilities, WantedAppiumCapabilities.IOS_DEFAULT_CAPABILITIES);
-        if (variableExists(IOSMobileCapabilityType.SHOULD_USE_SINGLETON_TESTMANAGER)) {
-            capabilities.setCapability(IOSMobileCapabilityType.SHOULD_USE_SINGLETON_TESTMANAGER, Boolean.parseBoolean(SteviaContext.getParam(IOSMobileCapabilityType.SHOULD_USE_SINGLETON_TESTMANAGER)));
-        }
-        if (variableExists(IOSMobileCapabilityType.WDA_STARTUP_RETRY_INTERVAL)) {
-            capabilities.setCapability(IOSMobileCapabilityType.WDA_STARTUP_RETRY_INTERVAL, Integer.parseInt(SteviaContext.getParam(IOSMobileCapabilityType.WDA_STARTUP_RETRY_INTERVAL)));
-        }
-    }
-
-    private void setCapabilitiesInList(DesiredCapabilities capabilities, List<String> capList) {
-        for (String cap : capList) {
-            setCapabilityIfExists(capabilities, cap);
-        }
-    }
-
-    private void setCapabilityIfExists(DesiredCapabilities capabilities, String capabilityToSet) {
-        if (variableExists(capabilityToSet)) {
-            capabilities.setCapability(capabilityToSet, SteviaContext.getParam(capabilityToSet));
-        }
     }
 
     @Override

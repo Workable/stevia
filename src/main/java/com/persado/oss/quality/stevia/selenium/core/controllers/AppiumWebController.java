@@ -43,18 +43,15 @@ import com.persado.oss.quality.stevia.selenium.core.SteviaContext;
 import com.persado.oss.quality.stevia.selenium.core.WebController;
 import com.persado.oss.quality.stevia.selenium.core.controllers.commonapi.KeyInfo;
 import com.persado.oss.quality.stevia.selenium.core.controllers.webdriverapi.BySizzle;
+import io.appium.java_client.AppiumBy;
 import io.appium.java_client.AppiumDriver;
-import io.appium.java_client.MobileBy;
-import io.appium.java_client.PerformsTouchActions;
-import io.appium.java_client.TouchAction;
-import io.appium.java_client.touch.TapOptions;
-import io.appium.java_client.touch.WaitOptions;
-import io.appium.java_client.touch.offset.ElementOption;
-import io.appium.java_client.touch.offset.PointOption;
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.*;
 import org.openqa.selenium.html5.LocalStorage;
 import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.interactions.Pause;
+import org.openqa.selenium.interactions.PointerInput;
+import org.openqa.selenium.interactions.Sequence;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
@@ -66,10 +63,7 @@ import org.springframework.util.Assert;
 import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 
 // TODO: Auto-generated Javadoc
@@ -253,29 +247,29 @@ public class AppiumWebController extends WebControllerBase implements WebControl
      */
     public By determineLocator(String locator) {
         if (locator.startsWith(XPATH)) {
-            return MobileBy.xpath(findLocatorSubstring(locator));
+            return AppiumBy.xpath(findLocatorSubstring(locator));
         } else if (locator.startsWith("//")) {
-            return MobileBy.xpath(locator);
+            return AppiumBy.xpath(locator);
         } else if (locator.startsWith(CSS)) {
             return BySizzle.css(findLocatorSubstring(locator));
         } else if (locator.startsWith(NAME)) {
-            return MobileBy.name(findLocatorSubstring(locator));
+            return AppiumBy.name(findLocatorSubstring(locator));
         } else if (locator.startsWith(LINK)) {
-            return MobileBy.linkText(findLocatorSubstring(locator));
+            return AppiumBy.linkText(findLocatorSubstring(locator));
         } else if (locator.startsWith(ID)) {
-            return MobileBy.id(findLocatorSubstring(locator));
+            return AppiumBy.id(findLocatorSubstring(locator));
         } else if (locator.startsWith(TAG)) {
-            return MobileBy.tagName(findLocatorSubstring(locator));
+            return AppiumBy.tagName(findLocatorSubstring(locator));
         } else if (locator.startsWith(CLASS)) {
-            return MobileBy.className(findLocatorSubstring(locator));
+            return AppiumBy.className(findLocatorSubstring(locator));
         } else if (locator.startsWith(ACC_ID)) {
-            return MobileBy.AccessibilityId(findLocatorSubstring(locator));
+            return AppiumBy.accessibilityId(findLocatorSubstring(locator));
         } else if (locator.startsWith(CLASS_CHAIN)) {
-            return MobileBy.iOSClassChain(findLocatorSubstring(locator));
+            return AppiumBy.iOSClassChain(findLocatorSubstring(locator));
         } else if (locator.startsWith(UI_AUTO)) {
-            return MobileBy.AndroidUIAutomator(findLocatorSubstring(locator));
+            return AppiumBy.androidUIAutomator(findLocatorSubstring(locator));
         } else {
-            return MobileBy.id(locator);
+            return AppiumBy.id(locator);
         }
     }
 
@@ -1852,17 +1846,35 @@ public class AppiumWebController extends WebControllerBase implements WebControl
 
     @Override
     public void tap(String locator) {
-        new TouchAction((PerformsTouchActions) driver).tap(TapOptions.tapOptions().withElement(ElementOption.element(waitForElement(locator)))).perform();
+        PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
+        Sequence tap = new Sequence(finger, 1)
+                .addAction(finger.createPointerMove(Duration.ofMillis(0), PointerInput.Origin.viewport(), waitForElement(locator).getLocation().getX(), waitForElement(locator).getLocation().getY()+1))
+                .addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()))
+                .addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
+
+        driver.perform(Collections.singletonList(tap));
     }
 
     @Override
     public void tap(int x, int y) {
-        new TouchAction((PerformsTouchActions) driver).tap(TapOptions.tapOptions().withPosition(PointOption.point(x, y))).perform();
+        PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
+        Sequence tap = new Sequence(finger, 1)
+                .addAction(finger.createPointerMove(Duration.ofMillis(0), PointerInput.Origin.viewport(), x, y))
+                .addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()))
+                .addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
+
+        driver.perform(Collections.singletonList(tap));
     }
 
     @Override
     public void tap(WebElement el) {
-        new TouchAction((PerformsTouchActions) driver).tap(TapOptions.tapOptions().withElement(ElementOption.element(el))).perform();
+        PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
+        Sequence tap = new Sequence(finger, 1)
+                .addAction(finger.createPointerMove(Duration.ofMillis(0), PointerInput.Origin.viewport(), el.getLocation().getX(), el.getLocation().getY()))
+                .addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()))
+                .addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
+
+        driver.perform(Collections.singletonList(tap));
     }
 
     @Override
@@ -1891,12 +1903,26 @@ public class AppiumWebController extends WebControllerBase implements WebControl
 
     @Override
     public void swipe(int startX, int startY, int endX, int endY) {
-        new TouchAction((PerformsTouchActions) driver).press(PointOption.point(startX, startY)).moveTo(PointOption.point(endX, endY)).release().perform();
+        PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
+        Sequence sequence = new Sequence(finger, 1)
+                .addAction(finger.createPointerMove(Duration.ZERO, PointerInput.Origin.viewport(), startX, startY))
+                .addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()))
+                .addAction(new Pause(finger, Duration.ofMillis(200)))
+                .addAction(finger.createPointerMove(Duration.ofMillis(100), PointerInput.Origin.viewport(), endX, endY))
+                .addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
+        driver.perform(Collections.singletonList(sequence));
     }
 
     @Override
     public void swipe(int startX, int startY, int endX, int endY, int duration) {
-        new TouchAction((PerformsTouchActions) driver).press(PointOption.point(startX, startY)).waitAction(WaitOptions.waitOptions(Duration.ofMillis(duration))).moveTo(PointOption.point(endX, endY)).release().perform();
+        PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
+        Sequence sequence = new Sequence(finger, 1)
+                .addAction(finger.createPointerMove(Duration.ZERO, PointerInput.Origin.viewport(), startX, startY))
+                .addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()))
+                .addAction(new Pause(finger, Duration.ofMillis(200)))
+                .addAction(finger.createPointerMove(Duration.ofMillis(duration), PointerInput.Origin.viewport(), endX, endY))
+                .addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
+        driver.perform(Collections.singletonList(sequence));
     }
 
     @Override
