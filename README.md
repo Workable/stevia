@@ -23,7 +23,7 @@ The following features are supported in the current Stevia build (new features h
 * [Extended "By" mechanism to support SizzleCSS](http://seleniumtestingworld.blogspot.gr/2013/01/adding-sizzle-css-selector-library-and.html) on Webdriver
 * Detailed "Verify" class with lots of assertions pre-coded
 * Supports for SSH/SFTP via utility classes
-* Supports for HTTP GET,POST with Jetty high-performance, multi-threaded helper and cookies support
+* Supports for HTTP GET,POST with Jetty high-performance, multithreaded helper and cookies support
 * Supports thread-level common user configuration and state across Tests (within Stevia thread context)
 * Supports Annotations (Java 5+)
     * RunsWithController - allows a different controller (different browser or session) to run a @Test method or class
