@@ -8,7 +8,7 @@ Our 10-minutes guide for using Stevia is in our [wiki](https://github.com/persad
 ## Features
 
 The following features are supported in the current Stevia build (new features have a version next to them):
-* Works with latest Selenium libraries (4.20+) and Spring 3.2.x (4.0 coming soon)
+* Works with latest Selenium libraries (4.23+) and Spring 3.2.x (4.0 coming soon)
 * Works with stable TestNG tested for parallel running
 * Supports both Webdriver and Selenium RC, standalone or Grid via easy configuration
 * Supports TestNG with parallel test execution (each thread has its own browser/session)
@@ -23,7 +23,7 @@ The following features are supported in the current Stevia build (new features h
 * [Extended "By" mechanism to support SizzleCSS](http://seleniumtestingworld.blogspot.gr/2013/01/adding-sizzle-css-selector-library-and.html) on Webdriver
 * Detailed "Verify" class with lots of assertions pre-coded
 * Supports for SSH/SFTP via utility classes
-* Supports for HTTP GET,POST with Jetty high-performance, multi-threaded helper and cookies support
+* Supports for HTTP GET,POST with Jetty high-performance, multithreaded helper and cookies support
 * Supports thread-level common user configuration and state across Tests (within Stevia thread context)
 * Supports Annotations (Java 5+)
     * RunsWithController - allows a different controller (different browser or session) to run a @Test method or class
