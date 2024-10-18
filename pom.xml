@@ -455,7 +455,7 @@
 
 	<!-- Shared version number properties -->
 	<properties>
-		<org.springframework.version>5.0.2.RELEASE</org.springframework.version>
+		<org.springframework.version>6.1.14</org.springframework.version>
 		<selenium.version>4.23.1</selenium.version>
 		<appium.version>9.2.3</appium.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
