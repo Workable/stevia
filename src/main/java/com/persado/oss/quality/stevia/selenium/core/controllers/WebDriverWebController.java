@@ -411,7 +411,7 @@ public class WebDriverWebController extends WebControllerBase implements WebCont
         moveToElement(locator);
         WebElement element = waitForElement(locator);
         highlight(element);
-        element.click();
+        waitForElement(locator).click();
         info("The element with locator '" + locator + "' was clicked");
     }
 
