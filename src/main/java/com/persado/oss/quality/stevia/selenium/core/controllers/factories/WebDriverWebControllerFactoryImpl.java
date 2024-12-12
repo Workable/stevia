@@ -119,7 +119,7 @@ public class WebDriverWebControllerFactoryImpl implements WebControllerFactory {
          * we need to take into consideration the time needed for the Grid node to be spawned
          * Gridlastic suggests setting it to 10 minutes
          */
-        ClientConfig baseConfig = ClientConfig.defaultConfig().baseUrl(new URL(rcUrl)).connectionTimeout(Duration.ofSeconds(40L)).readTimeout(Duration.ofMinutes(Integer.parseInt(SteviaContext.getParam("nodeTimeout")))).withRetries();
+        ClientConfig baseConfig = ClientConfig.defaultConfig().baseUrl(new URL(rcUrl));
         ClientConfig config = (SteviaContext.getParam("grid").equals("gridlastic") || !gridInfo.hasBasicAuth) ? baseConfig : baseConfig.authenticateAs(new UsernameAndPassword(gridInfo.userName, gridInfo.password));
         CommandExecutor executor = new HttpCommandExecutor(config);
         try {
@@ -137,7 +137,6 @@ public class WebDriverWebControllerFactoryImpl implements WebControllerFactory {
             SteviaLogger.error("Exception on getting remoteWebDriver: " + e.getMessage());
             throw e;
         }
-        setTimeout(driver);
         return driver;
     }
 
@@ -158,27 +157,6 @@ public class WebDriverWebControllerFactoryImpl implements WebControllerFactory {
                 throw new IllegalStateException("Browser requested is invalid");
         }
         return driver;
-    }
-
-    /**
-     * Set read timeout on NettyClient of WebDriver using Reflection
-     * This is needed in order to update the readTimeout private field at a later time of instatiation of RemoteWebDriver object
-     * ReadTimeout should have a reasonable value
-     *
-     * @param driver
-     * @throws NoSuchFieldException
-     * @throws IllegalAccessException
-     */
-    private void setTimeout(WebDriver driver) throws NoSuchFieldException, IllegalAccessException {
-        if (driver instanceof RemoteWebDriver) {
-            Field clientOfExecutor = HttpCommandExecutor.class.getDeclaredField("client");
-            Field readTimeout = JdkHttpClient.class.getDeclaredField("readTimeout");
-            clientOfExecutor.setAccessible(true);
-            readTimeout.setAccessible(true);
-            HttpCommandExecutor executor = (HttpCommandExecutor) ((RemoteWebDriver) driver).getCommandExecutor();
-            JdkHttpClient client = (JdkHttpClient) clientOfExecutor.get(executor);
-            readTimeout.set(client, Duration.ofSeconds(120));
-        }
     }
 
     /**
