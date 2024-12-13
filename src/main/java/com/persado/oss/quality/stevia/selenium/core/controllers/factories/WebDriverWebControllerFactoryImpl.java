@@ -119,7 +119,7 @@ public class WebDriverWebControllerFactoryImpl implements WebControllerFactory {
          * we need to take into consideration the time needed for the Grid node to be spawned
          * Gridlastic suggests setting it to 10 minutes
          */
-        ClientConfig baseConfig = ClientConfig.defaultConfig().baseUrl(new URL(rcUrl));
+        ClientConfig baseConfig = ClientConfig.defaultConfig().baseUrl(new URL(rcUrl)).readTimeout(Duration.ofMinutes(4));
         ClientConfig config = (SteviaContext.getParam("grid").equals("gridlastic") || !gridInfo.hasBasicAuth) ? baseConfig : baseConfig.authenticateAs(new UsernameAndPassword(gridInfo.userName, gridInfo.password));
         CommandExecutor executor = new HttpCommandExecutor(config);
         try {
