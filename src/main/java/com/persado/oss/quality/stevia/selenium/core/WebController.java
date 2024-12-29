@@ -1150,6 +1150,14 @@ public interface WebController {
     void tap(String locator);
 
     /**
+     * Perform long press on web element identified by locator
+     *
+     * @param locator
+     * @param duration
+     */
+    void longPress(String locator, int duration);
+
+    /**
      * Perform tap on x,y coordinates
      *
      * @param x
