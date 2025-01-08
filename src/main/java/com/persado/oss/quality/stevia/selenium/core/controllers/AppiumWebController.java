@@ -1854,6 +1854,18 @@ public class AppiumWebController extends WebControllerBase implements WebControl
 
         driver.perform(Collections.singletonList(tap));
     }
+    @Override
+    public void longPress(String locator, int duration) {
+        List<WebElement> elements = findElements(locator);
+        WebElement element = elements.get(elements.size() - 1);
+        PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
+        Sequence sequence = new Sequence(finger, 1)
+                .addAction(finger.createPointerMove(Duration.ZERO, PointerInput.Origin.viewport(), (element.getRect().getX() + (element.getRect().getWidth() / 2)), (element.getRect().getY() + (element.getRect().getHeight() / 2))))
+                .addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()))
+                .addAction(new Pause(finger, Duration.ofSeconds(duration)))
+                .addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
+        driver.perform(Collections.singletonList(sequence));
+    }
 
     @Override
     public void tap(int x, int y) {

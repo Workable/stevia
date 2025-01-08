@@ -1875,6 +1875,12 @@ public class WebDriverWebController extends WebControllerBase implements WebCont
 
     @Override
     @Deprecated
+    public void longPress(String locator, int duration) {
+
+    }
+
+    @Override
+    @Deprecated
     public void tap(int x, int y) {
 
     }

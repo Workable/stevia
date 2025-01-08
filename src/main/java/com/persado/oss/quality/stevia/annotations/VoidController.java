@@ -865,6 +865,11 @@ class VoidController implements WebController {
     }
 
     @Override
+    public void longPress(String locator, int duration) {
+        // TODO Auto-generated method stub
+    }
+
+    @Override
     public void tap(int x, int y) {
         // TODO Auto-generated method stub
     }
