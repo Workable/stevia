@@ -108,7 +108,7 @@ public class SteviaTestBase extends AbstractTestNGSpringContextTests implements 
      */
     @BeforeSuite(alwaysRun = true)
     protected final void configureSuiteSettings() throws Exception {
-        Map<String, String> parameters = configureParameters();
+        Map<String, Object> parameters = configureParameters();
 
         //stevia context init
 
@@ -131,8 +131,8 @@ public class SteviaTestBase extends AbstractTestNGSpringContextTests implements 
         propNames.forEach(p -> parameters.put(p, System.getProperty(p)));
         return parameters;
     }
-    private static Map<String, String> configureParameters() {
-        Map<String, String> parameters = new HashMap<>();
+    private static Map<String, Object> configureParameters() {
+        Map<String, Object> parameters = new HashMap<>();
         Set<String> propNames = System.getProperties().stringPropertyNames();
         propNames.forEach(p -> parameters.put(p, System.getProperty(p)));
         return parameters;
@@ -180,8 +180,8 @@ public class SteviaTestBase extends AbstractTestNGSpringContextTests implements 
     protected final void contextInitBeforeTest(ITestContext testContext) throws Exception {
         configureParameters(testContext);
         testInitialisation(testContext);
-        Map<String, String> parameters = testContext.getCurrentXmlTest().getAllParameters();
-        testContext.getCurrentXmlTest().setParallel(XmlSuite.ParallelMode.getValidParallel(parameters.get("parallelSetup")));
+        Map parameters = testContext.getCurrentXmlTest().getAllParameters();
+        testContext.getCurrentXmlTest().setParallel(XmlSuite.ParallelMode.getValidParallel((String) parameters.get("parallelSetup")));
         String parallelSetup = testContext.getSuite().getParallel();
 
         if (parallelSetup == null || parallelSetup.isEmpty() || parallelSetup.equalsIgnoreCase("false") || parallelSetup.equalsIgnoreCase("none") || parallelSetup.equalsIgnoreCase("tests")) {
@@ -202,7 +202,7 @@ public class SteviaTestBase extends AbstractTestNGSpringContextTests implements 
     @BeforeClass(alwaysRun = true)
     protected final void contextInitBeforeClass(ITestContext testContext) throws Exception {
 
-        Map<String, String> parameters = testContext.getSuite().getXmlSuite().getAllParameters();
+        Map parameters = testContext.getSuite().getXmlSuite().getAllParameters();
 
         if (testContext.getSuite().getParallel().equalsIgnoreCase("classes")) {
 
@@ -225,7 +225,7 @@ public class SteviaTestBase extends AbstractTestNGSpringContextTests implements 
      */
     @BeforeMethod(alwaysRun = true)
     protected final void contextInitBeforeMethod(ITestContext testContext, Method method) throws Exception {
-        Map<String, String> parameters = testContext.getSuite().getXmlSuite().getAllParameters();
+        Map parameters = testContext.getSuite().getXmlSuite().getAllParameters();
 
         if (testContext.getSuite().getParallel().equalsIgnoreCase("methods")) {
 
@@ -290,7 +290,7 @@ public class SteviaTestBase extends AbstractTestNGSpringContextTests implements 
      * @param params
      * @throws Exception
      */
-    protected final void initializeStevia(Map<String, String> params) throws Exception {
+    protected final void initializeStevia(Map<String, Object> params) throws Exception {
         if (applicationContext == null) {
             super.springTestContextPrepareTestInstance();
         }
@@ -301,7 +301,7 @@ public class SteviaTestBase extends AbstractTestNGSpringContextTests implements 
         }
         SteviaContext.attachSpringContext(applicationContext);
 
-        if (params.get("run.api.test") == null || params.get("run.api.test").equalsIgnoreCase("false")) {
+        if (params.get("run.api.test") == null || params.get("run.api.test").toString().equalsIgnoreCase("false")) {
             configureWebController();
         }
 

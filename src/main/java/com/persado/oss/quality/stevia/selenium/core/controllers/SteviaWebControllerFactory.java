@@ -58,7 +58,7 @@ public final class SteviaWebControllerFactory implements Constants {
     public static WebController getWebController(ApplicationContext context) throws MalformedURLException, InterruptedException, ExecutionException, TimeoutException, NoSuchFieldException, IllegalAccessException {
         WebController controller = null;
 
-        String driverType = SteviaContext.getParam(DRIVER_TYPE);
+        String driverType = (String) SteviaContext.getParam(DRIVER_TYPE);
 
         @SuppressWarnings("unchecked")
         DriverRegistry<String, WebControllerFactory> registry = (DriverRegistry<String, WebControllerFactory>) context.getBean("steviaDriverRegistry");

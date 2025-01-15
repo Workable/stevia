@@ -47,8 +47,8 @@ import java.util.Map;
  */
 public interface SteviaContextParameters extends Serializable {
 
-    Map<String, String> getAllParameters();
+    Map<String, Object> getAllParameters();
 
-    void setAllParameters(Map<String, String> params);
+    void setAllParameters(Map<String, Object> params);
 
 }

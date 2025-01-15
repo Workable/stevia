@@ -87,7 +87,7 @@ public class SteviaContext {
         /**
          * The params registry.
          */
-        private Map<String, String> paramsRegistry;
+        private Map<String, Object> paramsRegistry;
 
         /**
          * The desired capabilities
@@ -164,11 +164,11 @@ public class SteviaContext {
         }
 
         public String getTargetHostUrl() {
-            return getParam("targetHostUrl");
+            return (String) getParam("targetHostUrl");
         }
 
         public String getTargetHostUrlDomain() {
-            return getParam("targetHostUrl").split("\\.+")[1];
+            return ((String) getParam("targetHostUrl")).split("\\.+")[1];
         }
 
         public int getWaitForWindow() {
@@ -250,9 +250,9 @@ public class SteviaContext {
      * @param params a type of SteviaContextParameters
      */
     public static void registerParameters(SteviaContextParameters params) {
-        Map<String, String> paramsRegistry = innerContext.get().paramsRegistry;
+        Map<String, Object> paramsRegistry = innerContext.get().paramsRegistry;
         if (paramsRegistry == null) {
-            innerContext.get().paramsRegistry = new HashMap<String, String>();
+            innerContext.get().paramsRegistry = new HashMap<>();
         }
         innerContext.get().paramsRegistry.putAll(params.getAllParameters());
         LOG.warn("Thread {} just registered", new Object[]{Thread.currentThread().getName()});
@@ -269,7 +269,7 @@ public class SteviaContext {
      * @param paramName the param name
      * @return the parameter value
      */
-    public static String getParam(String paramName) {
+    public static Object getParam(String paramName) {
         return innerContext.get().paramsRegistry.get(paramName);
     }
 
@@ -283,7 +283,7 @@ public class SteviaContext {
      *
      * @return a Map of the registered parameters
      */
-    public static Map<String, String> getParams() {
+    public static Map<String, Object> getParams() {
         return innerContext.get().paramsRegistry;
     }
 

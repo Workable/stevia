@@ -88,14 +88,14 @@ public class AppiumWebControllerFactoryImpl implements WebControllerFactory {
     }
 
     private URL buildAppiumUrl() throws MalformedURLException {
-        String rcHost = SteviaContext.getParam(SteviaWebControllerFactory.RC_HOST);
-        String rcPort = SteviaContext.getParam(SteviaWebControllerFactory.RC_PORT);
+        String rcHost = (String) SteviaContext.getParam(SteviaWebControllerFactory.RC_HOST);
+        String rcPort = (String) SteviaContext.getParam(SteviaWebControllerFactory.RC_PORT);
         String url = String.format("http://%s:%s/wd/hub", rcHost, rcPort);
         return new URL(url);
     }
 
     private boolean variableExists(String param) {
-        return !StringUtils.isEmpty(SteviaContext.getParam(param));
+        return !StringUtils.isEmpty((String) SteviaContext.getParam(param));
     }
 
     @Override

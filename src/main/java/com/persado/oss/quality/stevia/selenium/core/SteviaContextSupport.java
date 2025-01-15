@@ -43,7 +43,7 @@ import java.util.Map;
 public final class SteviaContextSupport {
 	
 	
-	public static SteviaContextParameters getParameters(final Map<String,String> map) {
+	public static SteviaContextParameters getParameters(final Map<String,Object> map) {
 		return new SteviaContextParameters() {
 
 			/**
@@ -52,20 +52,20 @@ public final class SteviaContextSupport {
 			private static final long serialVersionUID = 18484837231L;
 
 			@Override
-			public Map<String, String> getAllParameters() {
+			public Map<String, Object> getAllParameters() {
 				return map;
 			}
 
 			@Override
-			public void setAllParameters(Map<String, String> params) {
+			public void setAllParameters(Map<String, Object> params) {
 				throw new IllegalArgumentException("this implementation does not allow setting the map!");
 			}
 			
 		};
 	}
 	
-	public static SteviaContextParameters getParameters(String key, String value) {
-		Map<String,String> map = new HashMap<String,String>();
+	public static SteviaContextParameters getParameters(String key, Object value) {
+		Map<String,Object> map = new HashMap<>();
 		map.put(key, value);
 		return getParameters(map);
 	}

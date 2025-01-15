@@ -80,8 +80,8 @@ public class WebDriverWebControllerFactoryImpl implements WebControllerFactory {
 
         // Handle type of webdriver based on "remote" param
         System.out.println("Initializing web driver with capabilities:" + SteviaContext.getCapabilities());
-        String grid = SteviaContext.getParam("grid");
-        final String wdHost = SteviaContext.getParam("rcUrl");
+        String grid = (String) SteviaContext.getParam("grid");
+        final String wdHost = (String) SteviaContext.getParam("rcUrl");
         GridInfo gridInfo;
         switch (grid) {
             case "gridlastic":
@@ -101,7 +101,7 @@ public class WebDriverWebControllerFactoryImpl implements WebControllerFactory {
         }
         //Navigate to the desired target host url
         if (SteviaContext.getParam(SteviaWebControllerFactory.TARGET_HOST_URL) != null) {
-            driver.get(SteviaContext.getParam(SteviaWebControllerFactory.TARGET_HOST_URL));
+            driver.get((String) SteviaContext.getParam(SteviaWebControllerFactory.TARGET_HOST_URL));
         }
         wdController.setDriver(new Augmenter().augment(driver));
         return wdController;
