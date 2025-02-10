@@ -428,6 +428,12 @@ class VoidController implements WebController {
     }
 
     @Override
+    public boolean isComponentActive(String locator) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
     public void pressLinkName(String linkName) {
         // TODO Auto-generated method stub
 

@@ -927,6 +927,11 @@ public class AppiumWebController extends WebControllerBase implements WebControl
         return (Boolean) executeJavascript("$(\"" + locator + "\").is(':checked')");
     }
 
+    @Override
+    public boolean isComponentActive(String locator) {
+        throw new RuntimeException("Method implementation missing");
+    }
+
     /*
      * (non-Javadoc)
      *

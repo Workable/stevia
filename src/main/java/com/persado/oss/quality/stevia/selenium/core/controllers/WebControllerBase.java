@@ -169,6 +169,11 @@ public abstract class WebControllerBase implements WebController {
 		return file.getPath();
 	}
 
+	@Override
+	public boolean isComponentActive(String locator) {
+		throw new RuntimeException("Method implementation missing");
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
