@@ -564,6 +564,16 @@ public interface WebController {
      */
     boolean isInputChecked(String locator);
 
+
+    /**
+     * Checks if an element is active (has focus on it)
+     *
+     * @param locator the locator of the element
+     * @return true, if the specified component is active
+     */
+    boolean isComponentActive(String locator);
+
+
     /**
      * Press link name.
      *

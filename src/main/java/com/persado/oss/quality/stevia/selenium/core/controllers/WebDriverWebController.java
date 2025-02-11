@@ -961,6 +961,17 @@ public class WebDriverWebController extends WebControllerBase implements WebCont
         return (Boolean) executeJavascript("return $(\"" + locator.replace("css=", "") + "\").is(':checked')");
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see com.persado.oss.quality.stevia.selenium.core.WebController#
+     * isComponentActive(org.openqa.selenium.String)
+     */
+    @Override
+    public boolean isComponentActive(String locator) {
+        return isComponentVisible(locator) && driver.switchTo().activeElement().equals(driver.findElement(determineLocator(locator)));
+    }
+
     /**
      * Switch to window.
      */
