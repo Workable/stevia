@@ -99,6 +99,7 @@ public class WebDriverWebControllerFactoryImpl implements WebControllerFactory {
                 break;
 
         }
+        driver.manage().timeouts().pageLoadTimeout(Duration.ofMinutes(1));
         //Navigate to the desired target host url
         if (SteviaContext.getParam(SteviaWebControllerFactory.TARGET_HOST_URL) != null) {
             driver.get(SteviaContext.getParam(SteviaWebControllerFactory.TARGET_HOST_URL));
