@@ -43,7 +43,6 @@ import org.openqa.selenium.Dimension;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.html5.LocalStorage;
 import org.openqa.selenium.interactions.Actions;
 
 import java.io.File;
@@ -55,32 +54,8 @@ import java.util.Set;
 class VoidController implements WebController {
 
     @Override
-    public void clearStorage() {
-    }
-
-    @Override
     public WebDriver getDriver() {
         return null;
-    }
-
-    @Override
-    public LocalStorage getLocalStorage() {
-        return null;
-    }
-
-    @Override
-    public void setLocalStorageItem(String key, String value) {
-
-    }
-
-    @Override
-    public String getLocalStorageItem(String key) {
-        return null;
-    }
-
-    @Override
-    public void deleteLocalStorageItem(String key) {
-
     }
 
     @Override

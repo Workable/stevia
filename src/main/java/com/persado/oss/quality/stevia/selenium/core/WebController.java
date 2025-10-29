@@ -42,7 +42,6 @@ import org.openqa.selenium.Dimension;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.html5.LocalStorage;
 import org.openqa.selenium.interactions.Actions;
 
 import java.io.File;
@@ -57,36 +56,8 @@ import java.util.Set;
  * The Interface WebController.
  */
 public interface WebController {
-    /**
-     * Clear local and session storage
-     * Applies only in WebDriverWebController
-     */
-    void clearStorage();
 
     WebDriver getDriver();
-
-
-    /**
-     * Get browser's local storage
-     */
-    LocalStorage getLocalStorage();
-
-    /**
-     * Set item in browser's local storage
-     */
-    void setLocalStorageItem(String key, String value);
-
-    /**
-     * Set item in browser's local storage
-     */
-    String getLocalStorageItem(String key);
-
-    /**
-     * Delete item from browser's local storage
-     *
-     * @param key
-     */
-    void deleteLocalStorageItem(String key);
 
     /**
      * Close the current window, quitting the browser if it's the last window currently open.
