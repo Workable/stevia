@@ -295,7 +295,9 @@ public class AppiumWebController extends WebControllerBase implements WebControl
     @Override
     public WebElement waitForElement(String locator, long waitSeconds) {
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(waitSeconds), Duration.ofMillis(THREAD_SLEEP));
-        return wait.until(ExpectedConditions.visibilityOfElementLocated(determineLocator(locator)));
+        WebElement element =  wait.until(ExpectedConditions.visibilityOfElementLocated(determineLocator(locator)));
+        highlight(element, "green");
+        return element;
     }
 
     /*
@@ -342,7 +344,9 @@ public class AppiumWebController extends WebControllerBase implements WebControl
 
     public WebElement waitForElementPresence(String locator, long waitSeconds) {
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(waitSeconds), Duration.ofMillis(THREAD_SLEEP));
-        return wait.until(ExpectedConditions.presenceOfElementLocated(determineLocator(locator)));
+        WebElement element = wait.until(ExpectedConditions.presenceOfElementLocated(determineLocator(locator)));
+        highlight(element, "green");
+        return element;
     }
 
     @Override
@@ -696,8 +700,28 @@ public class AppiumWebController extends WebControllerBase implements WebControl
      *
      * @param element the element
      */
-    public void highlight(WebElement element) {
-        executeJavascript("arguments[0].style.backgroundColor = 'rgb(255, 255, 0)'", element);
+    public void highlight(WebElement element, String color) {
+        Map<String, Object> args = new HashMap<>();
+        args.put("command", "am");
+        args.put("args", new String[]{
+                "broadcast",
+                "-n", SteviaContext.getParam("packageName") + "/com.workable.shared.notifications.HighlightReceiver",
+                "-a", "com.workable.shared.HIGHLIGHT",
+                "--es", "bounds", getBounds(element),
+                "--es", "color", color,
+                "--el", "autoDismissMs", "1000"
+        });
+        driver.executeScript("mobile: shell", args);
+    }
+
+    // element.getRect() gives x,y,width,height
+    private String getBounds(WebElement element) {
+        Rectangle rect = element.getRect();
+        int x = rect.getX();
+        int y = rect.getY() - 75;
+        int width = rect.getWidth();
+        int height = rect.getHeight();
+        return x+","+y+","+width+","+height;
     }
 
     /*
@@ -709,7 +733,6 @@ public class AppiumWebController extends WebControllerBase implements WebControl
      */
     @Override
     public void highlight(String locator) {
-        executeJavascript("arguments[0].style.backgroundColor = 'rgb(255, 255, 0)'", waitForElement(locator));
     }
 
     /*
@@ -721,7 +744,6 @@ public class AppiumWebController extends WebControllerBase implements WebControl
      */
     @Override
     public void highlight(String locator, String color) {
-        executeJavascript("arguments[0].style.backgroundColor = arguments[1]", waitForElement(locator), color);
     }
 
     /*
@@ -1851,9 +1873,10 @@ public class AppiumWebController extends WebControllerBase implements WebControl
 
     @Override
     public void tap(String locator) {
+        WebElement element = waitForElement(locator);
         PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
         Sequence tap = new Sequence(finger, 1)
-                .addAction(finger.createPointerMove(Duration.ofMillis(0), PointerInput.Origin.viewport(), waitForElement(locator).getLocation().getX(), waitForElement(locator).getLocation().getY()+1))
+                .addAction(finger.createPointerMove(Duration.ofMillis(0), PointerInput.Origin.viewport(), element.getLocation().getX(), element.getLocation().getY()+1))
                 .addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()))
                 .addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
 
