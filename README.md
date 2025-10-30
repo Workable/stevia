@@ -8,7 +8,7 @@ Our 10-minutes guide for using Stevia is in our [wiki](https://github.com/persad
 ## Features
 
 The following features are supported in the current Stevia build (new features have a version next to them):
-* Works with latest Selenium libraries (4.23+) and Spring 3.2.x (4.0 coming soon)
+* Works with latest Selenium libraries (4.38+) and Spring 3.2.x (4.0 coming soon)
 * Works with stable TestNG tested for parallel running
 * Supports both Webdriver and Selenium RC, standalone or Grid via easy configuration
 * Supports TestNG with parallel test execution (each thread has its own browser/session)

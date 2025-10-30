@@ -47,7 +47,6 @@ import io.appium.java_client.AppiumBy;
 import io.appium.java_client.AppiumDriver;
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.*;
-import org.openqa.selenium.html5.LocalStorage;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.interactions.Pause;
 import org.openqa.selenium.interactions.PointerInput;
@@ -173,31 +172,6 @@ public class AppiumWebController extends WebControllerBase implements WebControl
     @Override
     public void waitForCondition(String jscondition) {
         waitForCondition(jscondition, SteviaContext.getWaitForElement());
-    }
-
-    @Override
-    public void clearStorage() {
-
-    }
-
-    @Override
-    public LocalStorage getLocalStorage() {
-        return null;
-    }
-
-    @Override
-    public void setLocalStorageItem(String key, String value) {
-
-    }
-
-    @Override
-    public String getLocalStorageItem(String key) {
-        return null;
-    }
-
-    @Override
-    public void deleteLocalStorageItem(String key) {
-
     }
 
     /*
