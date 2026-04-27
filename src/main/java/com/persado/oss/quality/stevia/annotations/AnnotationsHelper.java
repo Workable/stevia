@@ -39,6 +39,7 @@ package com.persado.oss.quality.stevia.annotations;
 import com.persado.oss.quality.stevia.selenium.core.SteviaContext;
 import com.persado.oss.quality.stevia.selenium.core.WebController;
 import com.persado.oss.quality.stevia.selenium.core.controllers.SteviaWebControllerFactory;
+import org.openqa.selenium.Dimension;
 import org.openqa.selenium.WebDriverException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,6 +77,13 @@ public class AnnotationsHelper implements ApplicationContextAware {
         };
     };
 
+    private static final ThreadLocal<Map<String, WebController>> namedControllers = new ThreadLocal<Map<String, WebController>>() {
+        @Override
+        protected Map<String, WebController> initialValue() {
+            return new HashMap<String, WebController>();
+        };
+    };
+
 	public static void disposeControllers() {
 		for (WebController controller : controllers.get().values()) {
 			LOG.info("Removing {} in SteviaContext.clean - disposeControllers()", controller);
@@ -87,6 +95,17 @@ public class AnnotationsHelper implements ApplicationContextAware {
 
 		}
 		controllers.get().clear();
+
+		for (Map.Entry<String, WebController> entry : namedControllers.get().entrySet()) {
+			LOG.info("Removing named controller '{}' in SteviaContext.clean - disposeControllers()", entry.getKey());
+			try {
+				entry.getValue().quit();
+			} catch (WebDriverException wde) {
+				LOG.warn("Exception caught calling controller.quit(): \"" + wde.getMessage() + "\" additional info: " + wde.getAdditionalInformation());
+			}
+		}
+		namedControllers.get().clear();
+
 		Deque<WebController> cache = controllerStack.get();
 		while (cache.peek() != null) {
 			LOG.warn("test ends while controllers still masked - will clear the masked controller also");
@@ -184,8 +203,69 @@ public class AnnotationsHelper implements ApplicationContextAware {
 			LOG.warn("Controller was not masked. It is optional anyway in @RunsConditionsWithController.");
 		}
 	}
-	
-	
+
+	/**
+	 * Switches to a named controller, creating it if it doesn't exist yet.
+	 * Named controllers are cached and can be reused across multiple invocations.
+	 * The current controller is pushed onto the stack and can be restored with {@link #popController()}.
+	 * To dispose a named controller, use {@link #disposeNamedController(String)}.
+	 *
+	 * @param name the name to identify this controller
+	 * @return true if a new controller was created, false if an existing one was reused
+	 */
+	public static boolean pushNamedController(String name) throws InterruptedException, ExecutionException, TimeoutException, MalformedURLException, NoSuchFieldException, IllegalAccessException {
+		WebController currentController = SteviaContext.getWebController();
+		Dimension currentSize = currentController.getDriver().manage().window().getSize();
+		controllerStack.get().push(currentController);
+
+		Map<String, WebController> named = namedControllers.get();
+		boolean isNew = !named.containsKey(name);
+		WebController namedController;
+		if (isNew) {
+			namedController = SteviaWebControllerFactory.getWebController(SteviaContext.getSpringContext());
+			namedController.setWindowSize(currentSize);
+			named.put(name, namedController);
+			LOG.info("Created new named controller '{}'", name);
+		} else {
+			namedController = named.get(name);
+			LOG.info("Reusing named controller '{}'", name);
+		}
+		SteviaContext.setWebController(namedController);
+		return isNew;
+	}
+
+	/**
+	 * Restores the previous controller from the stack without quitting the current one.
+	 * Use this when the current controller should stay alive (e.g. a named controller with close=false).
+	 */
+	public static void popController() {
+		Deque<WebController> stack = controllerStack.get();
+		if (stack.peek() != null) {
+			SteviaContext.setWebController(stack.pop());
+			LOG.info("Restored previous controller from stack (current controller kept alive)");
+		} else {
+			LOG.warn("No controller on stack to restore");
+		}
+	}
+
+	/**
+	 * Quits and removes a named controller from the cache.
+	 *
+	 * @param name the name of the controller to dispose
+	 */
+	public static void disposeNamedController(String name) {
+		WebController controller = namedControllers.get().remove(name);
+		if (controller != null) {
+			try {
+				controller.quit();
+				LOG.info("Disposed named controller '{}'", name);
+			} catch (WebDriverException wde) {
+				LOG.warn("Exception disposing named controller '{}': \"{}\" additional info: {}", name, wde.getMessage(), wde.getAdditionalInformation());
+			}
+		}
+	}
+
+
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext)
 			throws BeansException {
