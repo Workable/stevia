@@ -54,6 +54,7 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.remote.*;
 import org.openqa.selenium.remote.http.ClientConfig;
+import org.openqa.selenium.remote.http.Filter;
 import org.springframework.context.ApplicationContext;
 
 import java.net.MalformedURLException;
@@ -64,6 +65,15 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 public class WebDriverWebControllerFactoryImpl implements WebControllerFactory {
+
+    /**
+     * Extra filter applied to the HTTP client of every remote driver built from now on, e.g. to retry requests
+     */
+    private static volatile Filter clientFilter;
+
+    public static void setClientFilter(Filter filter) {
+        clientFilter = filter;
+    }
 
     @Override
     public WebController initialize(ApplicationContext context, WebController controller) throws InterruptedException, ExecutionException, TimeoutException, MalformedURLException, NoSuchFieldException, IllegalAccessException {
@@ -126,6 +136,10 @@ public class WebDriverWebControllerFactoryImpl implements WebControllerFactory {
 
         ClientConfig baseConfig = ClientConfig.defaultConfig().baseUrl(new URL(rcUrl)).readTimeout(Duration.ofMinutes(Integer.parseInt(readTimeout)));
         ClientConfig config = (SteviaContext.getParam("grid").equals("gridlastic") || !gridInfo.hasBasicAuth) ? baseConfig : baseConfig.authenticateAs(new UsernameAndPassword(gridInfo.userName, gridInfo.password));
+        Filter filter = clientFilter;
+        if (filter != null) {
+            config = config.withFilter(filter);
+        }
         CommandExecutor executor = new HttpCommandExecutor(config);
         try {
             driver = new RemoteWebDriver(executor, desiredCapabilities);
