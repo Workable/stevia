@@ -117,15 +117,20 @@ public class WebDriverWebControllerFactoryImpl implements WebControllerFactory {
      * Open the target host url in a fresh session.
      * The first navigation of a browser on a grid node that has just been spawned can hang until the page load timeout
      * ("Timed out receiving message from renderer"), leaving the test without a driver and the node occupied.
-     * So the first navigation gets a shorter page load timeout and, when it times out, the session is quit and a new one
-     * is requested, up to "firstNavigationRetries" times (default 1). The session is always quit before giving up.
-     * The timeout of the first navigation is set in seconds by "firstNavigationTimeout" (default 120).
+     * The session is always quit before an exception is rethrown, so a failed first navigation never holds a grid slot.
+     * The retry is opt-in: with "firstNavigationRetries" set above 0 (default 0), the first navigation gets a shorter
+     * page load timeout, "firstNavigationTimeout" in seconds (default 120), and when it times out the session is quit
+     * and a new one is requested, up to that many times. With no retries the navigation is unchanged.
      */
     private WebDriver navigateToTargetHostUrl(WebDriver driver, Capabilities capabilities, String targetHostUrl) throws MalformedURLException, NoSuchFieldException, IllegalAccessException {
-        int retries = StringUtils.isEmpty(SteviaContext.getParam("firstNavigationRetries")) ? 1 : Integer.parseInt(SteviaContext.getParam("firstNavigationRetries"));
+        int retries = StringUtils.isEmpty(SteviaContext.getParam("firstNavigationRetries")) ? 0 : Integer.parseInt(SteviaContext.getParam("firstNavigationRetries"));
         Duration firstNavigationTimeout = Duration.ofSeconds(StringUtils.isEmpty(SteviaContext.getParam("firstNavigationTimeout")) ? 120 : Long.parseLong(SteviaContext.getParam("firstNavigationTimeout")));
         for (int attempt = 0; ; attempt++) {
             try {
+                if (retries <= 0) {
+                    driver.get(targetHostUrl);
+                    return driver;
+                }
                 Duration pageLoadTimeout = driver.manage().timeouts().getPageLoadTimeout();
                 driver.manage().timeouts().pageLoadTimeout(firstNavigationTimeout);
                 driver.get(targetHostUrl);
