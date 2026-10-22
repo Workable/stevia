@@ -79,6 +79,18 @@ public class WebDriverWebControllerFactoryImpl implements WebControllerFactory {
 
         // Handle type of webdriver based on "remote" param
         System.out.println("Initializing web driver with capabilities:" + SteviaContext.getCapabilities());
+        driver = createDriver(capabilities);
+        //Navigate to the desired target host url
+        String targetHostUrl = SteviaContext.getParam(SteviaWebControllerFactory.TARGET_HOST_URL);
+        if (targetHostUrl != null) {
+            driver = navigateToTargetHostUrl(driver, capabilities, targetHostUrl);
+        }
+        wdController.setDriver(new Augmenter().augment(driver));
+        return wdController;
+    }
+
+    private WebDriver createDriver(Capabilities capabilities) throws MalformedURLException, NoSuchFieldException, IllegalAccessException {
+        WebDriver driver;
         String grid = SteviaContext.getParam("grid");
         final String wdHost = SteviaContext.getParam("rcUrl");
         GridInfo gridInfo;
@@ -98,12 +110,48 @@ public class WebDriverWebControllerFactoryImpl implements WebControllerFactory {
                 break;
 
         }
-        //Navigate to the desired target host url
-        if (SteviaContext.getParam(SteviaWebControllerFactory.TARGET_HOST_URL) != null) {
-            driver.get(SteviaContext.getParam(SteviaWebControllerFactory.TARGET_HOST_URL));
+        return driver;
+    }
+
+    /**
+     * Open the target host url in a fresh session.
+     * The first navigation of a browser on a grid node that has just been spawned can hang until the page load timeout
+     * ("Timed out receiving message from renderer"), leaving the test without a driver and the node occupied.
+     * So the first navigation gets a shorter page load timeout and, when it times out, the session is quit and a new one
+     * is requested, up to "firstNavigationRetries" times (default 1). The session is always quit before giving up.
+     * The timeout of the first navigation is set in seconds by "firstNavigationTimeout" (default 120).
+     */
+    private WebDriver navigateToTargetHostUrl(WebDriver driver, Capabilities capabilities, String targetHostUrl) throws MalformedURLException, NoSuchFieldException, IllegalAccessException {
+        int retries = StringUtils.isEmpty(SteviaContext.getParam("firstNavigationRetries")) ? 1 : Integer.parseInt(SteviaContext.getParam("firstNavigationRetries"));
+        Duration firstNavigationTimeout = Duration.ofSeconds(StringUtils.isEmpty(SteviaContext.getParam("firstNavigationTimeout")) ? 120 : Long.parseLong(SteviaContext.getParam("firstNavigationTimeout")));
+        for (int attempt = 0; ; attempt++) {
+            try {
+                Duration pageLoadTimeout = driver.manage().timeouts().getPageLoadTimeout();
+                driver.manage().timeouts().pageLoadTimeout(firstNavigationTimeout);
+                driver.get(targetHostUrl);
+                driver.manage().timeouts().pageLoadTimeout(pageLoadTimeout);
+                return driver;
+            } catch (org.openqa.selenium.TimeoutException e) {
+                quitQuietly(driver);
+                if (attempt >= retries) {
+                    SteviaLogger.error("First navigation to " + targetHostUrl + " timed out in " + (attempt + 1) + " sessions: " + e.getMessage());
+                    throw e;
+                }
+                SteviaLogger.warn("First navigation to " + targetHostUrl + " timed out, retrying in a new session: " + e.getMessage());
+                driver = createDriver(capabilities);
+            } catch (RuntimeException e) {
+                quitQuietly(driver);
+                throw e;
+            }
         }
-        wdController.setDriver(new Augmenter().augment(driver));
-        return wdController;
+    }
+
+    private void quitQuietly(WebDriver driver) {
+        try {
+            driver.quit();
+        } catch (Exception e) {
+            SteviaLogger.warn("Could not quit the session: " + e.getMessage());
+        }
     }
 
     @Override
